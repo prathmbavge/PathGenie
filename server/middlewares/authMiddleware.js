@@ -21,7 +21,7 @@ async function authMiddleware(req, res, next) {
 
   if (session) {
     // console.log(session);
-    req.session = session;
+    req.user = session.user;
     next();
   } else {
     logger.error('No session found');

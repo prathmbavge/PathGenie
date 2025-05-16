@@ -6,11 +6,11 @@ import ApiResponse from '../utils/ApiResponse.js';
 
 export default {
   updateProfle: asyncHandler(async (req, res) => {
-       const { user } = req.session;
-    console.log(user.profileId);
-   console.log(req.body);
+    const profileId = req.user.profileId;
+    console.log(profileId);
+    //  console.log(req.body);
     // Update the profile with the new data
-   const profile = await Profile.updateOne({ _id: user.profileId }, { $set: req.body });
+    const profile = await Profile.updateOne({ _id: profileId }, { $set: req.body });
 
     if (!profile) {
       throw new ApiError(404, 'Profile not found');
@@ -20,9 +20,9 @@ export default {
   }),
 
   getProfile: asyncHandler(async (req, res) => {
-    const { user } = req.session;
-    console.log(user.profileId);
-    const profile = await Profile.findOne({ _id: user.profileId });
+     const profileId = req.user.profileId;
+    console.log(profileId);
+    const profile = await Profile.findOne({ _id: profileId });
     if (!profile) {
       throw new ApiError(404, 'Profile not found');
     }

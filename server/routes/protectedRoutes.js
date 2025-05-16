@@ -10,6 +10,7 @@
 import express from 'express';
 import authMiddleware from '../middlewares/authMiddleware.js';
 import userRoutes from './userRoutes.js';
+import mindmapRoutes from './mindmapRoutes.js'; // Assuming you have this route defined
 
 
 /**
@@ -19,6 +20,7 @@ import userRoutes from './userRoutes.js';
 const router = express.Router();
 
 router.use('/user', authMiddleware, userRoutes);
+router.use('/mindmaps', authMiddleware, mindmapRoutes); // Assuming you have mindmapRoutes defined
 
 export default router;
 

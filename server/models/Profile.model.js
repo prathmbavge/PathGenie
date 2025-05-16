@@ -1,8 +1,10 @@
 import mongoose from "mongoose";
 
 const profileSchema = new mongoose.Schema({
-    userId: {
-    type: String,
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
   },
   bio: {
     type: String,
@@ -16,11 +18,10 @@ const profileSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-    updatedAt: {
-        type: Date,
-        default: Date.now,
-    },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
-export default mongoose.model("Profile", profileSchema);    
-  
+export default mongoose.model("Profile", profileSchema);

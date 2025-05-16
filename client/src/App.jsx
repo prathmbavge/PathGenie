@@ -6,7 +6,7 @@ import {
   Navigate,
   useLocation,
 } from "react-router-dom";
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from "react-hot-toast";
 import { useSession } from "./lib/auth-client";
 import Pattern from "./components/Pattern.jsx";
 import Login from "./Pages/Login.jsx";
@@ -15,7 +15,7 @@ import Dashboard from "./Pages/Dashboard.jsx";
 import Profile from "./Pages/Profile.jsx";
 import Navbar from "./components/Navbar.jsx";
 import LandingPage from "./Pages/LandingPage.jsx";
-// import MindMap from "./Pages/MindMap.jsx";
+import MindMapPage from "./Pages/MindMapPage.jsx";
 
 // PrivateRoute component to protect routes
 const PrivateRoute = ({ children }) => {
@@ -95,8 +95,9 @@ function App() {
     <Pattern>
       <Router>
         {/* Navbar component can be included here if needed */}
-        {window.location.pathname !== "/login" &&
-          window.location.pathname !== "/register" && <Navbar />}
+        {/* {window.location.pathname !== "/login" &&
+          window.location.pathname !== "/register" &&
+          window.location.pathname !== "/mindmap" && <Navbar />} */}
         <Routes>
           {/* Public Routes */}
           <Route
@@ -134,41 +135,34 @@ function App() {
               </PrivateRoute>
             }
           />
-          {/* <Route
-            path="/mindmap"
-            element={
-              <PrivateRoute>
-                <MindMap />
-              </PrivateRoute>
-            }
-          /> */}
+         <Route path="/mindmap/:mindmapId" element={<MindMapPage />} />
         </Routes>
       </Router>
       <Toaster
-      /**
-       * Configures the Toaster component with custom options.
-       *
-       * @prop {string} position - The position of the toasts on the screen.
-       * @prop {object} toastOptions - The options for the toasts.
-       * @prop {number} toastOptions.duration - The duration of the toasts in milliseconds.
-       * @prop {object} toastOptions.style - The style options for the toasts.
-       * @prop {string} toastOptions.style.fontWeight - The font weight of the toast text.
-       * @prop {string} toastOptions.style.fontSize - The font size of the toast text.
-       * @prop {string} toastOptions.style.fontFamily - The font family of the toast text.
-       * @return {ReactElement} The rendered Toaster component.
-       */
-      position="top-center"
-      toastOptions={{
-        duration: 4000,
-        style: {
-          fontWeight: 'bold',
-          fontSize: '1.5rem',
-          fontFamily: 'times new roman',
-          backgroundColor: 'black',
-          color: 'white',
-        },
-      }}
-    />
+        /**
+         * Configures the Toaster component with custom options.
+         *
+         * @prop {string} position - The position of the toasts on the screen.
+         * @prop {object} toastOptions - The options for the toasts.
+         * @prop {number} toastOptions.duration - The duration of the toasts in milliseconds.
+         * @prop {object} toastOptions.style - The style options for the toasts.
+         * @prop {string} toastOptions.style.fontWeight - The font weight of the toast text.
+         * @prop {string} toastOptions.style.fontSize - The font size of the toast text.
+         * @prop {string} toastOptions.style.fontFamily - The font family of the toast text.
+         * @return {ReactElement} The rendered Toaster component.
+         */
+        position="top-center"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            fontWeight: "bold",
+            fontSize: "1.5rem",
+            fontFamily: "times new roman",
+            backgroundColor: "black",
+            color: "white",
+          },
+        }}
+      />
     </Pattern>
   );
 }

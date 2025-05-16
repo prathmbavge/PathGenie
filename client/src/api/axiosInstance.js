@@ -10,7 +10,7 @@ import costants from '../../constants'
  * @returns {AxiosInstance} The configured Axios instance.
  */
 const axiosInstance = axios.create({
-  baseURL: costants.serverUrl,
+  baseURL: `${costants.serverUrl}/api`,
   withCredentials: true
 });
 

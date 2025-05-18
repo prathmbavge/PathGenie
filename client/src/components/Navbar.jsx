@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { authClient } from "../lib/auth-client";
 import SlideButton from "../components/Buttons/SlideButton";
@@ -9,6 +9,8 @@ const Navbar = () => {
   const { data: session, isPending } = authClient.useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [isNavbarVisible, setIsNavbarVisible] = useState(true);
+  const [timeoutId, setTimeoutId] = useState(null);
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
@@ -26,15 +28,48 @@ const Navbar = () => {
     setIsMenuOpen((prev) => !prev);
   };
 
+  // Effect to handle hiding and showing the navbar based on mouse position
+  useEffect(() => {
+    const handleMouseMove = (event) => {
+      // Show navbar if mouse is within 50px from the top
+      if (event.clientY <= 50) {
+        setIsNavbarVisible(true);
+        if (timeoutId) {
+          clearTimeout(timeoutId); // Clear any existing timeout
+        }
+      } else {
+        // Set a timeout to hide the navbar after 2 seconds of inactivity
+        const id = setTimeout(() => {
+          setIsNavbarVisible(false);
+        }, 2000);
+        setTimeoutId(id);
+      }
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+
+    // Cleanup event listener and timeout on component unmount
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [timeoutId]);
+
   return (
-    <nav className="fixed w-full top-0 z-50 mt-3">
+    <nav
+      className={`fixed w-full top-0 z-50 mt-1 transition-transform duration-300 ${
+        isNavbarVisible ? "transform translate-y-0" : "transform -translate-y-full"
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 w-full">
           {/* Logo */}
           <div className="flex-shrink-0 text-white">
             <NavLink to="/">
               <img
-                className="h-auto max-w-[200px] sm:max-w-[250px]"
+                className="h-auto max-w-[150px] sm:max-w-[250px]"
                 src={pathgenie}
                 alt="PathGenie Logo"
               />

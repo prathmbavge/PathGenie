@@ -1,22 +1,79 @@
-import React from "react";
-import GlowCard from "../components/Cards/GlowCard";
-import SlideButton from "../components/Buttons/SlideButton";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import GradientInput from "../components/Input/GradientInput";
+import SlideButton from "../components/Buttons/SlideButton";
+import GlowCard from "../components/Cards/GlowCard";
+import { requestHandler } from "../../utils/index";
+import { showSuccessToast } from "../../utils/toast";
+import { createMindmap, getAllMindmaps } from "../api/mindmapApi";
+
 const Dashboard = () => {
+  const [title, setTitle] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [mindmaps, setMindmaps] = useState([]);
+  // const [error, setError] = useState(null);
+  const navigate = useNavigate();
+
+  const handleCreateMindmap = async () => {
+    if (!title.trim()) {
+      alert("Please enter a title.");
+      return;
+    }
+    setLoading(true);
+    await requestHandler(
+      () => createMindmap(title),
+      setLoading,
+      (res) => {
+        const mindmapId = res.data.mindmap._id;
+        showSuccessToast("Mindmap created successfully");
+        navigate(`/mindmap/${mindmapId}`);
+      },
+      (error) => {
+        console.error("Error creating mindmap:", error);
+        alert("Failed to create mindmap.");
+      }
+    );
+  };
+
+  
+  useEffect(() => {
+    const fetchMindmaps = async () => {
+      setLoading(true);
+      await requestHandler(
+        () => getAllMindmaps(),
+        setLoading,
+        (res) => {
+          console.log("Fetched mindmaps:", res.data.mindmaps);
+          setMindmaps(res.data.mindmaps);
+          showSuccessToast("Fetched mindmaps successfully");
+        },
+        (error) => {
+          console.error("Error fetching mindmaps:", error);
+          alert("Failed to fetch mindmaps.");
+        }
+      );
+    };
+
+    fetchMindmaps();
+  }, []);
+
   return (
-    <div className=" mt-18 flex flex-col items-center justify-center h-screen w-screen ">
-      {/* <h1 className="text-4xl font-bold text-white">Dashboard</h1> */}
+    <div className="mt-20 flex flex-col items-center justify-center">
       <div className="flex flex-col items-center justify-center">
         <GradientInput
-          id="search"
-          name="search"
+          id="title"
+          name="title"
           type="text"
           placeholder="Idea Title..."
           required
-          style={{ width: "80vw", marginTop: "20px" }}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          style={{ width: "80vw", marginTop: "20px", margin: "0 auto" }}
         />
         <SlideButton
-          text="Start Magic"
+          text={loading ? "Creating..." : "Start Magic"}
+          onClick={handleCreateMindmap}
+          disabled={loading}
           style={{ marginTop: "10px", width: "30%" }}
           icon={
             <svg
@@ -31,202 +88,45 @@ const Dashboard = () => {
             </svg>
           }
         />
-      </div>
-      <div className=" grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 overflow-auto">
-        <GlowCard width="340px" height="340px" padding="30px">
-          <h2 className="text-2xl font-semibold text-white">Your Stats</h2>
-          <p className="mt-2 text-gray-300">Here are your stats...</p>
-          <ul className="mt-2 space-y-2">
-            <li className="text-gray-200">Stat 1: 100</li>
-            <li className="text-gray-200">Stat 2: 200</li>
-            <li className="text-gray-200">Stat 3: 300</li>
-          </ul>
-          <SlideButton
-            text="Register"
-            icon={
-              <span aria-hidden="true">
-                <svg
-                  className="w-6 h-6 text-gray-800 dark:text-white"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 10 16"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="m2.707 14.293 5.586-5.586a1 1 0 0 0 0-1.414L2.707 1.707A1 1 0 0 0 1 2.414v11.172a1 1 0 0 0 1.707.707Z"
-                  />
-                </svg>
-              </span>
-            }
-            style={{ width: "75%", marginTop: "20px" }}
-          />
-        </GlowCard>
-        <GlowCard width="340px" height="340px" padding="30px">
-          <h2 className="text-2xl font-semibold text-white">Your Stats</h2>
-          <p className="mt-2 text-gray-300">Here are your stats...</p>
-          <ul className="mt-4 space-y-2">
-            <li className="text-gray-200">Stat 1: 100</li>
-            <li className="text-gray-200">Stat 2: 200</li>
-            <li className="text-gray-200">Stat 3: 300</li>
-          </ul>
-          <SlideButton
-            text="Register"
-            icon={
-              <span aria-hidden="true">
-                <svg
-                  className="w-6 h-6 text-gray-800 dark:text-white"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 10 16"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="m2.707 14.293 5.586-5.586a1 1 0 0 0 0-1.414L2.707 1.707A1 1 0 0 0 1 2.414v11.172a1 1 0 0 0 1.707.707Z"
-                  />
-                </svg>
-              </span>
-            }
-            style={{ width: "75%", marginTop: "20px" }}
-          />
-        </GlowCard>
-        <GlowCard width="340px" height="340px" padding="30px">
-          <h2 className="text-2xl font-semibold text-white">Your Stats</h2>
-          <p className="mt-2 text-gray-300">Here are your stats...</p>
-          <ul className="mt-4 space-y-2">
-            <li className="text-gray-200">Stat 1: 100</li>
-            <li className="text-gray-200">Stat 2: 200</li>
-            <li className="text-gray-200">Stat 3: 300</li>
-          </ul>
-          <SlideButton
-            text="Register"
-            icon={
-              <span aria-hidden="true">
-                <svg
-                  className="w-6 h-6 text-gray-800 dark:text-white"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 10 16"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="m2.707 14.293 5.586-5.586a1 1 0 0 0 0-1.414L2.707 1.707A1 1 0 0 0 1 2.414v11.172a1 1 0 0 0 1.707.707Z"
-                  />
-                </svg>
-              </span>
-            }
-            style={{ width: "75%", marginTop: "20px" }}
-          />
-        </GlowCard>
-        <GlowCard width="340px" height="340px" padding="30px">
-          <h2 className="text-2xl font-semibold text-white">Your Stats</h2>
-          <p className="mt-2 text-gray-300">Here are your stats...</p>
-          <ul className="mt-4 space-y-2">
-            <li className="text-gray-200">Stat 1: 100</li>
-            <li className="text-gray-200">Stat 2: 200</li>
-            <li className="text-gray-200">Stat 3: 300</li>
-          </ul>
-          <SlideButton
-            text="Register"
-            icon={
-              <span aria-hidden="true">
-                <svg
-                  className="w-6 h-6 text-gray-800 dark:text-white"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 10 16"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="m2.707 14.293 5.586-5.586a1 1 0 0 0 0-1.414L2.707 1.707A1 1 0 0 0 1 2.414v11.172a1 1 0 0 0 1.707.707Z"
-                  />
-                </svg>
-              </span>
-            }
-            style={{ width: "75%", marginTop: "20px" }}
-          />
-        </GlowCard>
-        <GlowCard width="340px" height="340px" padding="30px">
-          <h2 className="text-2xl font-semibold text-white">Your Stats</h2>
-          <p className="mt-2 text-gray-300">Here are your stats...</p>
-          <ul className="mt-4 space-y-2">
-            <li className="text-gray-200">Stat 1: 100</li>
-            <li className="text-gray-200">Stat 2: 200</li>
-            <li className="text-gray-200">Stat 3: 300</li>
-          </ul>
-          <SlideButton
-            text="Register"
-            icon={
-              <span aria-hidden="true">
-                <svg
-                  className="w-6 h-6 text-gray-800 dark:text-white"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 10 16"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="m2.707 14.293 5.586-5.586a1 1 0 0 0 0-1.414L2.707 1.707A1 1 0 0 0 1 2.414v11.172a1 1 0 0 0 1.707.707Z"
-                  />
-                </svg>
-              </span>
-            }
-            style={{ width: "75%", marginTop: "20px" }}
-          />
-        </GlowCard>
-        <GlowCard width="340px" height="340px" padding="30px">
-          <h2 className="text-2xl font-semibold text-white">Your Stats</h2>
-          <p className="mt-2 text-gray-300">Here are your stats...</p>
-          <ul className="mt-4 space-y-2">
-            <li className="text-gray-200">Stat 1: 100</li>
-            <li className="text-gray-200">Stat 2: 200</li>
-            <li className="text-gray-200">Stat 3: 300</li>
-          </ul>
-          <SlideButton
-            text="Register"
-            icon={
-              <span aria-hidden="true">
-                <svg
-                  className="w-6 h-6 text-gray-800 dark:text-white"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 10 16"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="m2.707 14.293 5.586-5.586a1 1 0 0 0 0-1.414L2.707 1.707A1 1 0 0 0 1 2.414v11.172a1 1 0 0 0 1.707.707Z"
-                  />
-                </svg>
-              </span>
-            }
-            style={{ width: "75%", marginTop: "20px" }}
-          />
-        </GlowCard>
+        {loading && <p className="text-white mt-4">Loading...</p>}
+        <div className=" grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto w-full mt-10">
+          {
+            mindmaps && mindmaps.length > 0 ? (
+              mindmaps.map((mindmap) => (
+                <GlowCard
+                  key={mindmap._id}
+                 width="340px" height="340px" padding="30px">
+                  <div
+                    key={mindmap._id}
+                    className="flex flex-col items-center justify-center cursor-pointer"
+                    onClick={() => navigate(`/mindmap/${mindmap._id}`)}
+                  >
+                    <h2 className="text-2xl font-bold text-white">
+                      {mindmap.title}
+                    </h2>
+                    <p className="text-gray-400 mt-2">
+                      {new Date(mindmap.createdAt).toLocaleDateString()}
+                    </p>
+                    <p className="text-gray-400 mt-2">
+                      {mindmap.nodeCount} nodes
+                    </p>
+                    <p className="text-gray-400 mt-2">
+                      {mindmap.tags}
+                    </p>
+                    <p className="text-gray-400 mt-2">
+                      {mindmap.visibility}
+                    </p>
+                  </div>
+                </GlowCard>
+              ))
+            ) : (
+              <p className="text-white">No mindmaps found.</p>
+            )
+          }
+        </div>
       </div>
     </div>
   );
 };
+
 export default Dashboard;

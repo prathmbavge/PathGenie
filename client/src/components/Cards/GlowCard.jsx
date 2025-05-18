@@ -87,10 +87,10 @@ const CyberGlow = styled.div`
 `;
 
 // Main component
-const GlowCard = ({ width, height, padding, children  }) => (
+const GlowCard = ({ width, height, children  }) => (
   <Container>
    
-    <BatteryCard width={width} height={height} padding={padding}>
+    <BatteryCard width={width} height={height}>
       <HolographicOverlay />
       <DiagonalShine className="diagonal" />
       <CyberGlow className="glow" />

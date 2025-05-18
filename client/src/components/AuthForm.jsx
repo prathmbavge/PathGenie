@@ -55,29 +55,56 @@ const AuthForm = ({ isLogin = false }) => {
     setIsSubmitting(true);
     try {
       if (isLogin) {
-        await signIn.email({
-          email: formData.email,
-          password: formData.password,
-          callbackURL: constants.DASHBOARD_URL,
-        });
+        await signIn.email(
+          {
+            email: formData.email,
+            password: formData.password,
+            // callbackURL: constants.DASHBOARD_URL,
+            callbackURL: "http://localhost:5173/dashboard"
+          },
+          {
+            onError: (error) => {
+              setErrors((prev) => ({
+                ...prev,
+                general: error.error.message,
+              }));
+            },
+          }
+        );
         console.log("User logged in successfully:", { email: formData.email });
       } else {
-        await signUp.email({
-          email: formData.email,
-          password: formData.password,
-          name: formData.username,
-          callbackURL: constants.DASHBOARD_URL,
-        });
-        console.log("User registered successfully:", {
+        await signUp.email(
+          {
+            email: formData.email,
+            password: formData.password,
+            name: formData.username,
+            // callbackURL: constants.DASHBOARD_URL,
+            callbackURL: "http://localhost:5173/dashboard"
+          },
+          {
+            onError: (error) => {
+              setErrors((prev) => ({
+                ...prev,
+                general: error.error.message,
+              }));
+            },
+          }
+        );
+        console.log("Trying User registration:", {
           email: formData.email,
           username: formData.username,
         });
       }
     } catch (error) {
-      console.error(`${isLogin ? "Login" : "Registration"} failed:`, error.message);
+      console.error(
+        `${isLogin ? "Login" : "Registration"} failed:`,
+        error.message
+      );
       setErrors((prev) => ({
         ...prev,
-        general: `${isLogin ? "Login" : "Registration"} failed. Please try again.`,
+        general: `${
+          isLogin ? "Login" : "Registration"
+        } failed. Please try again.`,
       }));
     } finally {
       setIsSubmitting(false);
@@ -170,9 +197,7 @@ const AuthForm = ({ isLogin = false }) => {
       )}
 
       {errors.general && (
-        <div className="text-red-500 text-sm text-center">
-          {errors.general}
-        </div>
+        <div className="text-red-500 text-sm text-center">{errors.general}</div>
       )}
 
       <div className="text-center border-b-2 border-gray-300 pb-3 border-x-2">
@@ -201,7 +226,11 @@ const InputField = ({
   error,
   fullWidth = false,
 }) => (
-  <div className={`transition-all duration-300 ${fullWidth ? "w-full" : "w-full sm:w-1/2"}`}>
+  <div
+    className={`transition-all duration-300 ${
+      fullWidth ? "w-full" : "w-full sm:w-1/2"
+    }`}
+  >
     <label
       htmlFor={id}
       className="block text-sm font-medium text-gray-700 dark:text-white"

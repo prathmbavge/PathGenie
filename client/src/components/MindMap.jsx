@@ -3,7 +3,8 @@ import { useParams } from "react-router-dom";
 import useRoadmap from "../hooks/useRoadmap";
 import FlowComponent from "./FlowComponent";
 import CustomDrawer from "./CustomDrawer";
-import { ReactFlowProvider} from '@xyflow/react';
+import { ReactFlowProvider } from "@xyflow/react";
+
 const MindMap = () => {
   const { mindmapId } = useParams();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -19,22 +20,25 @@ const MindMap = () => {
     setDrawerContent(null);
   }, []);
 
-  const { nodes, onNodesChange, edges, onEdgesChange } = useRoadmap(mindmapId, openDrawer);
+  const { nodes, onNodesChange, edges, onEdgesChange } = useRoadmap(
+    mindmapId,
+    openDrawer
+  );
 
   return (
-    <div style={{ height: "100vh",  }} className="z-100">
+    <div style={{ height: "100vh" }} className="z-100">
       <CustomDrawer
         isOpen={isDrawerOpen}
         onClose={closeDrawer}
         content={drawerContent}
       >
         <ReactFlowProvider>
-        <FlowComponent
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-        />
+          <FlowComponent
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+          />
         </ReactFlowProvider>
       </CustomDrawer>
     </div>

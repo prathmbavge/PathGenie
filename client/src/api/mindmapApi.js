@@ -5,6 +5,7 @@ export const getAllMindmaps = async () => {
   const response = await axiosInstance.get('/mindmaps');
   return response.data;
 };
+
 export const createMindmap = async (title) => {
   const response = await axiosInstance.post('/mindmaps', { title });
   return response.data;

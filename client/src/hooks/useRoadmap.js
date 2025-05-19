@@ -14,7 +14,7 @@ const elkOptions = {
 
 // Optimized node lookup with a map
 const getLayoutedElements = async (nodes, edges, options = {}) => {
-  const isHorizontal = options['elk.direction'] === 'HORIZONTAL';
+  const isHorizontal = options['elk.direction'] === 'RIGHT';
   const nodeMap = nodes.reduce((acc, node) => ({ ...acc, [node.id]: node }), {});
 
   const graph = {
@@ -60,6 +60,7 @@ const getLayoutedElements = async (nodes, edges, options = {}) => {
 const useRoadmap = (mindmapId, openDrawer) => {
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
+  const [loading, setLoading] = useState(false);
   
   // Refs to track current state without dependencies
   const nodesRef = useRef(nodes);
@@ -87,7 +88,7 @@ const useRoadmap = (mindmapId, openDrawer) => {
     
     await requestHandler(
       () => getMindmap(mindmapId),
-      null,
+      setLoading,
       async (res) => {
         const reactNodes = res.data.nodes.map(node => ({
           id: node._id.toString(),
@@ -130,7 +131,7 @@ const useRoadmap = (mindmapId, openDrawer) => {
   const expandNodeHandler = useCallback(async (nodeId) => {
     await requestHandler(
       () => expandNode(mindmapId, nodeId),
-      null,
+      setLoading,
       async (res) => {
         const newNodes = res.data.newNodes.map(node => ({
           id: node._id.toString(),
@@ -179,6 +180,7 @@ const useRoadmap = (mindmapId, openDrawer) => {
     changes => setEdges(eds => applyEdgeChanges(changes, eds)),
     []
   );
+  
 
   return { nodes, onNodesChange, edges, onEdgesChange, onLayout };
 };

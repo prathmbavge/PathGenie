@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import GradientInput from "../components/Input/GradientInput";
 import SlideButton from "../components/Buttons/SlideButton";
 import { signIn, signUp } from "../lib/auth-client";
+import ArrowIcon from '../components/Icons/ArrowIcon';
+import LoginIcon from '../components/Icons/LoginIcon';
 import constants from "../../constants";
 
 const AuthForm = ({ isLogin = false }) => {
@@ -59,8 +61,8 @@ const AuthForm = ({ isLogin = false }) => {
           {
             email: formData.email,
             password: formData.password,
-            // callbackURL: constants.DASHBOARD_URL,
-            callbackURL: "http://localhost:5173/dashboard"
+            callbackURL: constants.DASHBOARD_URL,
+            // callbackURL: "http://localhost:5173/dashboard"
           },
           {
             onError: (error) => {
@@ -78,8 +80,9 @@ const AuthForm = ({ isLogin = false }) => {
             email: formData.email,
             password: formData.password,
             name: formData.username,
-            // callbackURL: constants.DASHBOARD_URL,
-            callbackURL: "http://localhost:5173/dashboard"
+            callbackURL: constants.DASHBOARD_URL,
+            // callbackURL: "http://localhost:5173/dashboard",
+            
           },
           {
             onError: (error) => {
@@ -205,7 +208,7 @@ const AuthForm = ({ isLogin = false }) => {
           type="button"
           text={isLogin ? "Login" : "Register"}
           icon={isLogin ? <LoginIcon /> : <ArrowIcon />}
-          style={{ width: "70%" }}
+          fullWidth={true}
           disabled={isSubmitting}
           onClick={handleSubmit}
         />
@@ -252,40 +255,6 @@ const InputField = ({
   </div>
 );
 
-const LoginIcon = () => (
-  <svg
-    className="w-6 h-6 text-gray-800 dark:text-white"
-    aria-hidden="true"
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 18 16"
-  >
-    <path
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      d="M1 8h11m0 0L8 4m4 4-4 4m4-11h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-3"
-    />
-  </svg>
-);
 
-const ArrowIcon = () => (
-  <svg
-    className="w-6 h-6 text-gray-800 dark:text-white"
-    aria-hidden="true"
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 10 16"
-  >
-    <path
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      d="m2.707 14.293 5.586-5.586a1 1 0 0 0 0-1.414L2.707 1.707A1 1 0 0 0 1 2.414v11.172a1 1 0 0 0 1.707.707Z"
-    />
-  </svg>
-);
 
 export default AuthForm;

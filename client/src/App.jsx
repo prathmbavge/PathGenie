@@ -1,45 +1,43 @@
+// src/App.jsx
 import React from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-  useLocation,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { useSession } from "./lib/auth-client";
 import Pattern from "./components/Pattern.jsx";
+
+// Pages/Components
 import Login from "./Pages/Login.jsx";
 import Register from "./Pages/Register.jsx";
 import Dashboard from "./Pages/Dashboard.jsx";
 import Profile from "./Pages/Profile.jsx";
-import Navbar from "./components/Navbar.jsx";
 import LandingPage from "./Pages/LandingPage.jsx";
 import MindMapPage from "./Pages/MindMapPage.jsx";
+import Navbar from "./components/Navbar/Navbar.jsx";
 
-// PrivateRoute component to protect routes
-const PrivateRoute = ({ children }) => {
+
+// ------------------------
+// Route Guards
+// ------------------------
+
+// Protects private routes: if session is pending, show loader; if no session, redirect to /login.
+function PrivateRoute({ children }) {
   const { data: session, isPending, error } = useSession();
   const location = useLocation();
 
-  // Handle loading state
   if (isPending) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="shadow-lg p-8 sm:p-12 w-full max-w-md">
-          <p className="text-center text-gray-900 dark:text-white">
-            Loading...
-          </p>
+          <p className="text-center text-gray-700">Loading...</p>
         </div>
       </div>
     );
   }
 
-  // Handle error state
   if (error) {
-    console.error("Session fetch error:", error.message);
+    console.error("Session fetch error:", error);
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center ">
         <div className="shadow-lg p-8 sm:p-12 w-full max-w-md">
           <p className="text-center text-red-500">
             Failed to load session. Please try again.
@@ -47,7 +45,7 @@ const PrivateRoute = ({ children }) => {
           <div className="mt-4 text-center">
             <button
               onClick={() => window.location.reload()}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              className="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded"
             >
               Retry
             </button>
@@ -57,114 +55,129 @@ const PrivateRoute = ({ children }) => {
     );
   }
 
-  // If no session, redirect to login with the intended destination
   if (!session) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Render the protected route
   return children;
-};
+}
 
-// PublicRoute to prevent logged-in users from accessing login/register
-const PublicRoute = ({ children }) => {
+// Prevents authenticated users from visiting login/register pages.
+function PublicRoute({ children }) {
   const { data: session, isPending } = useSession();
 
   if (isPending) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center ">
         <div className="shadow-lg p-8 sm:p-12 w-full max-w-md">
-          <p className="text-center text-gray-900 dark:text-white">
-            Loading...
-          </p>
+          <p className="text-center text-gray-700">Loading...</p>
         </div>
       </div>
     );
   }
 
-  // If user is logged in, redirect to dashboard
   if (session) {
     return <Navigate to="/dashboard" replace />;
   }
 
   return children;
-};
+}
 
-function App() {
+
+// ------------------------
+// Main App Component
+// ------------------------
+export default function App() {
+  const { data: session, isPending } = useSession();
+  const location = useLocation();
+
+  // Show a full-screen loader while auth is initializing
+  if (isPending) {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center">
+        <span className="text-gray-500">Checking authentication…</span>
+      </div>
+    );
+  }
+
+  // Determine which routes should hide the Navbar
+  const publicPaths = ["/login", "/register"];
+  const isPublicPath = publicPaths.includes(location.pathname);
+
+  // Only show Navbar if user is signed in AND not on a public page
+  const shouldShowNavbar = session?.user && !isPublicPath;
+
   return (
     <Pattern>
-      <Router>
-        {/* Navbar component can be included here if needed */}
-        {/* {window.location.pathname !== "/login" &&
-          window.location.pathname !== "/register" &&
-          window.location.pathname !== "/mindmap" && <Navbar />} */}
-        <Routes>
-          {/* Public Routes */}
-          <Route
-            path="/login"
-            element={
-              <PublicRoute>
-                <Login />
-              </PublicRoute>
-            }
-          />
-          <Route
-            path="/register"
-            element={
-              <PublicRoute>
-                <Register />
-              </PublicRoute>
-            }
-          />
-          <Route path="/" element={<LandingPage />} />
+      <div className="min-h-screen flex flex-col">
+        {shouldShowNavbar && <Navbar />}
 
-          {/* Protected Routes */}
-          <Route
-            path="/dashboard"
-            element={
-              <PrivateRoute>
-                <Dashboard />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <PrivateRoute>
-                <Profile />
-              </PrivateRoute>
-            }
-          />
-         <Route path="/mindmap/:mindmapId" element={<MindMapPage />} />
-        </Routes>
-      </Router>
-      <Toaster
-        /**
-         * Configures the Toaster component with custom options.
-         *
-         * @prop {string} position - The position of the toasts on the screen.
-         * @prop {object} toastOptions - The options for the toasts.
-         * @prop {number} toastOptions.duration - The duration of the toasts in milliseconds.
-         * @prop {object} toastOptions.style - The style options for the toasts.
-         * @prop {string} toastOptions.style.fontWeight - The font weight of the toast text.
-         * @prop {string} toastOptions.style.fontSize - The font size of the toast text.
-         * @prop {string} toastOptions.style.fontFamily - The font family of the toast text.
-         * @return {ReactElement} The rendered Toaster component.
-         */
-        position="top-center"
-        toastOptions={{
-          duration: 3000,
-          style: {
-            fontWeight: "bold",
-            fontSize: "1.5rem",
-            fontFamily: "times new roman",
-            backgroundColor: "black",
-            color: "white",
-          },
-        }}
-      />
+        <div className="flex-grow">
+          <Routes>
+            {/* Public Routes */}
+            <Route
+              path="/login"
+              element={
+                <PublicRoute>
+                  <Login />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <PublicRoute>
+                  <Register />
+                </PublicRoute>
+              }
+            />
+            <Route path="/" element={<LandingPage />} />
+
+            {/* Private Routes */}
+            <Route
+              path="/dashboard"
+              element={
+                <PrivateRoute>
+                  <Dashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <PrivateRoute>
+                  <Profile />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/mindmap/:mindmapId"
+              element={
+                <PrivateRoute>
+                  <MindMapPage />
+                </PrivateRoute>
+              }
+            />
+
+            {/* 404 Fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </div>
+
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            duration: 3000,
+            style: {
+              fontWeight: "bold",
+              fontSize: "1.25rem",
+              fontFamily: "Times New Roman, serif",
+              backgroundColor: "#000",
+              color: "#fff",
+            },
+          }}
+        />
+      </div>
     </Pattern>
   );
 }
-
-export default App;

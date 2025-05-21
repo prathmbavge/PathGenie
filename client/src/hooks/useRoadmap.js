@@ -14,7 +14,7 @@ const elkOptions = {
 
 // Optimized node lookup with a map
 const getLayoutedElements = async (nodes, edges, options = {}) => {
-  const isHorizontal = options['elk.direction'] === 'RIGHT';
+  const isHorizontal = options['elk.direction'] === 'DOWN';
   const nodeMap = nodes.reduce((acc, node) => ({ ...acc, [node.id]: node }), {});
 
   const graph = {
@@ -72,7 +72,7 @@ const useRoadmap = (mindmapId, openDrawer) => {
   }, [nodes, edges]);
 
   // Stable layout handler using refs
-  const onLayout = useCallback(async (direction = 'VERTICAL') => {
+  const onLayout = useCallback(async (direction = 'HORIZONTAL') => {
     const opts = { 'elk.direction': direction, ...elkOptions };
     const { nodes: ln, edges: le } = await getLayoutedElements(
       nodesRef.current,

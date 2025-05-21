@@ -60,11 +60,11 @@ const auth = betterAuth({
   socialProviders: {
     github: {
       clientId: config?.betterAuth?.github?.clientId,
-      clientSecret: config?.betterAuth?.github?.clientSecret,
+      clientSecret: config?.betterAuth?.github?.clientSecret
     },
     google: {
       clientId: config?.betterAuth?.google?.clientId,
-      clientSecret: config?.betterAuth?.google?.clientSecret,
+      clientSecret: config?.betterAuth?.google?.clientSecret
     }
   },
 });

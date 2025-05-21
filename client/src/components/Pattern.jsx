@@ -79,34 +79,7 @@ const StyledWrapper = styled.div`
       0 0 50px rgba(255, 255, 255, 0.2);
     position: relative;
     overflow: hidden;
-  }
-
-  .container::after {
-    content: "";
-    position: absolute;
-    top: -150%;
-    left: -20%;
-    right: -20%;
-    bottom: -150%;
-    background: linear-gradient(
-    110deg,
-      transparent 48%,
-      rgba(255, 255, 255, 0.1) 50%,
-      transparent 52%
-    );
-    animation: mirror-effect 4s infinite linear;
-    pointer-events: none;
-    transform: rotate(30deg);
-  }
-
-  @keyframes mirror-effect {
-    0% {
-      transform: translateY(-100%) rotate(50deg);
-    }
-    100% {
-      transform: translateY(100%) rotate(10deg);
-    }
-  }
+}
 `;
 
 export default Pattern; 

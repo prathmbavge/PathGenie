@@ -38,15 +38,16 @@ app.use(
  */
 app.all('/api/auth/*', toNodeHandler(auth));
 
+// app.get('/', (req, res) => {
+//   console.log('Root route accessed');
+//   res.redirect(`${constants.clientUrl}/dashboard`);
+// });
+
 /**
  * Parses incoming requests with JSON payloads.
  */
 app.use(express.json());
 
-/**
- * Serve static files from the 'dist' directory.
- */
-app.use(express.static(join(__dirname, 'public', 'dist')));
 
 /**
  * Parses incoming requests with URL-encoded payloads.

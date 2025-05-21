@@ -146,14 +146,16 @@ export function Profile() {
                   text="Save"
                   onClick={handleUpdateProfile}
                   disabled={isUpdating}
+                  isLoading={isUpdating}
+                  fullWidth={true}
 
                 />
               </div>
             </div>
           )}
           <div className="flex justify-center space-x-4 mt-6">
-            <SlideButton text="Refetch" onClick={handleRefetch} />
-            <SlideButton text="Logout" onClick={handleLogout} />
+            <SlideButton text="Refetch" onClick={handleRefetch} fullWidth={true} />
+            <SlideButton text="Logout" onClick={handleLogout} fullWidth={true} />
           </div>
         </div>
       </div>

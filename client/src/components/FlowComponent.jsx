@@ -9,7 +9,7 @@ const proOptions = { hideAttribution: true };
 
 const FlowComponent = ({ nodes, edges, onNodesChange, onEdgesChange }) => {
   return (
-    <div style={{ height: "100vh" }} className="z-100 text-black bg-orange-200">
+    <div style={{ height: "100vh" }} className="z-100 text-black">
       <ReactFlow
         nodes={nodes}
         edges={edges}

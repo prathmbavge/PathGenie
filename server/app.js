@@ -14,6 +14,7 @@ import auth from './lib/auth.js';
 import { toNodeHandler } from 'better-auth/node';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import authMiddleware from './middlewares/authMiddleware.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -38,7 +39,11 @@ app.use(
  */
 app.all('/api/auth/*', toNodeHandler(auth));
 
-app.get('/', (req, res) => {
+app.get('/', authMiddleware, (req, res) => {
+  const {user} = req;
+  if (user) {
+    console.log('User is authenticated:', user);
+  }
   console.log('Root route accessed');
   res.redirect(`${constants.clientUrl}/dashboard`);
 });

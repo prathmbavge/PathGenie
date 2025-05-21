@@ -50,8 +50,23 @@ const auth = betterAuth({
       },
     },
   },
+  advanced: {
+        crossSubDomainCookies: {
+            enabled: true,
+            domain: ".onrender.com", // Domain with a leading period
+        },
+        defaultCookieAttributes: {
+            secure: true,
+            httpOnly: true,
+            sameSite: "none",  // Allows CORS-based cookie sharing across subdomains
+            partitioned: true, // New browser standards will mandate this for foreign cookies
+        },
+    },
+
   trustedOrigins: [
+    'https://onrender.com',
     `${constants?.clientUrl}`,
+    `${constants?.serverUrl}`,
   ],
 
   emailAndPassword: {

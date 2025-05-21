@@ -13,8 +13,8 @@ const SocialSignInButtons = ({ onError }) => {
       try {
         await signIn.social({
           provider,
-          callbackURL: `${constants.clientUrl}/dashboard`,
-          newUserCallbackURL: `${constants.clientUrl}/profile`,
+          // callbackURL: `${constants.clientUrl}/dashboard`,
+          // newUserCallbackURL: `${constants.clientUrl}/profile`,
         });
         console.log(`Successfully signed in with ${provider}`);
       } catch (error) {

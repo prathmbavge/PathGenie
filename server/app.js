@@ -38,10 +38,10 @@ app.use(
  */
 app.all('/api/auth/*', toNodeHandler(auth));
 
-// app.get('/', (req, res) => {
-//   console.log('Root route accessed');
-//   res.redirect(`${constants.clientUrl}/dashboard`);
-// });
+app.get('/', (req, res) => {
+  console.log('Root route accessed');
+  res.redirect(`${constants.clientUrl}/dashboard`);
+});
 
 /**
  * Parses incoming requests with JSON payloads.

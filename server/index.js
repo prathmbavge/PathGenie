@@ -8,8 +8,6 @@
 
 import app from './app.js';
 import connectDB from './db/index.js';
-import protectedRoutes from './routes/protectedRoutes.js';
-import errorHandler from './middlewares/errorHandler.js';
 import config from './config/config.js';
 
 const PORT = config.port;
@@ -37,12 +35,6 @@ const startServer = async () => {
  * @return {void}
  */
 const init = () => {
-  // Protected routes
-  app.use('/api', protectedRoutes);
-
-  // Middleware to handle errors
-  app.use(errorHandler);
-
   // Start the server
   startServer();
 };

@@ -6,7 +6,7 @@
   "scripts": {
     "install:all": "npm install && cd client && npm install && cd ../server && npm install",
     "build:client": "cd client && npm run build",
-    "start:server": "cd server && NODE_ENV=production node index.js",
+    "start:server": "cd server && node index.js",
     "build": "npm run build:client",
     "start": "npm run start:server",
     "deploy": "npm run install:all && npm run build && npm run start"

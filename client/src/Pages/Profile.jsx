@@ -38,6 +38,7 @@ const Profile = () => {
       async () => await getUserProfile(),
       null,
       (res) => {
+        // console.log("Profile data:", res.data.profile);
         setProfile(res.data.profile);
         setBio(res.data?.profile.bio || "");
         showSuccessToast(res.message);
@@ -64,8 +65,9 @@ const Profile = () => {
       async () => await updateUserProfile({ bio: bio.trim() }),
       null,
       (res) => {
-        setProfile(res.data);
-        showSuccessToast("Profile updated successfully.");
+        // console.log("Profile updated:", res.data.profile);
+        // refetch();
+        showSuccessToast(res.message);
       },
       (err) => {
         setProfileError(err.message);

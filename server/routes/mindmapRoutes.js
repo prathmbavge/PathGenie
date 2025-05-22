@@ -3,7 +3,6 @@ const router = express.Router();
 import mindmapController from '../controllers/mindmapController.js';
 import authMiddleware from '../middlewares/authMiddleware.js'; // Assuming you have this middleware
 
-router.use(authMiddleware); // Apply authentication to all routes
 router.get('/', mindmapController.getAllMindmaps);
 router.post('/', mindmapController.createMindmap);
 router.get('/:mindmapId', mindmapController.getMindmap);

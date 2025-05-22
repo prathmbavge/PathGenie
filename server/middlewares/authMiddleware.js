@@ -20,7 +20,7 @@ async function authMiddleware(req, res, next) {
     });
 
   if (session) {
-    console.log(session);
+    // console.log(session);
     req.user = session.user;
     next();
   } else {

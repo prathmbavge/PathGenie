@@ -61,8 +61,7 @@ const AuthForm = ({ isLogin = false }) => {
           {
             email: formData.email,
             password: formData.password,
-            callbackURL: constants.DASHBOARD_URL,
-            // callbackURL: "http://localhost:5173/dashboard"
+            callbackURL: `${constants.mode === 'production' ? '' : `${constants.clientUrl}`}/dashboard`,
           },
           {
             onError: (error) => {
@@ -80,9 +79,7 @@ const AuthForm = ({ isLogin = false }) => {
             email: formData.email,
             password: formData.password,
             name: formData.username,
-            callbackURL: constants.DASHBOARD_URL,
-            // callbackURL: "http://localhost:5173/dashboard",
-            
+            callbackURL: `${constants.mode === 'production' ? '' : `${constants.clientUrl}`}/profile`,
           },
           {
             onError: (error) => {

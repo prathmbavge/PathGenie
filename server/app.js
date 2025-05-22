@@ -1,8 +1,3 @@
-/**
- * The main Express application.
- * @module app
- */
-
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
@@ -12,9 +7,8 @@ import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
 import auth from './lib/auth.js';
 import { toNodeHandler } from 'better-auth/node';
-import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import authMiddleware from './middlewares/authMiddleware.js';
+import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -39,20 +33,10 @@ app.use(
  */
 app.all('/api/auth/*', toNodeHandler(auth));
 
-app.get('/', authMiddleware, (req, res) => {
-  const {user} = req;
-  if (user) {
-    console.log('User is authenticated:', user);
-  }
-  console.log('Root route accessed');
-  res.redirect(`${constants.clientUrl}/dashboard`);
-});
-
 /**
  * Parses incoming requests with JSON payloads.
  */
 app.use(express.json());
-
 
 /**
  * Parses incoming requests with URL-encoded payloads.
@@ -95,5 +79,19 @@ app.use(
     },
   })
 );
+
+if (process.env.NODE_ENV === 'production') {
+  /**
+   * Serve static files from the client build directory.
+   */
+  app.use(express.static(join(__dirname, '..', 'client', 'dist')));
+
+  /**
+   * Serve the index.html file for all other routes.
+   */
+  app.get('*', (req, res) => {
+    res.sendFile(join(__dirname, '..', 'client', 'dist', 'index.html'));
+  });
+}
 
 export default app;

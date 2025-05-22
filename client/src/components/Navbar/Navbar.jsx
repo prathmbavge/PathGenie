@@ -168,7 +168,7 @@ const Navbar = () => {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden bg-gray-800 bg-opacity-95">
+          <div className="md:hidden  bg-blur-50 backdrop-blur-md rounded-lg shadow-lg p-4">
             <div className="flex flex-col items-center space-y-4 py-4">
               {navLinks.map(({ to, label }) => (
                 <NavLink
@@ -212,7 +212,7 @@ const Navbar = () => {
                       />
                     </svg>
                   }
-                  style={{ width: "20vw" }}
+                  fullWidth={true}
                 />
               ) : (
                 <SlideButton
@@ -238,7 +238,7 @@ const Navbar = () => {
                       />
                     </svg>
                   }
-                  style={{ width: "20vw" }}
+                  fullWidth={true}
                 />
               )}
             </div>

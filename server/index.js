@@ -12,9 +12,8 @@ import protectedRoutes from './routes/protectedRoutes.js';
 import errorHandler from './middlewares/errorHandler.js';
 import config from './config/config.js';
 
-
-
 const PORT = config.port;
+
 /**
  * Connects to the database and starts the server.
  *
@@ -38,7 +37,6 @@ const startServer = async () => {
  * @return {void}
  */
 const init = () => {
-
   // Protected routes
   app.use('/api', protectedRoutes);
 
@@ -51,4 +49,3 @@ const init = () => {
 
 // Initialize the server
 init();
-

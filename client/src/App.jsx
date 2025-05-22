@@ -56,28 +56,7 @@ function PrivateRoute({ children }) {
   }
 
   if (!session) {
-    console.log("No session found. Redirecting to login...");
-    console.log("Current location:", location.pathname);
-    console.log("Session data:", session);
-    console.log("Session error:", error);
-    
-    return (
-      <div className="min-h-screen flex items-center justify-center ">
-        <div className="shadow-lg p-8 sm:p-12 w-full max-w-md">
-          <p className="text-center text-gray-700">
-            You must be logged in to view this page.
-          </p>
-          <div className="mt-4 text-center">
-            <button
-              onClick={() => (window.location.href = "/login")}
-              className="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded"
-            >
-              Go to Login
-            </button>
-          </div>
-        </div>
-      </div>
-    );  
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   return children;

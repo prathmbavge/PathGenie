@@ -39,18 +39,7 @@ export const useRoadmap = (mindmapId, openDrawer) => {
         edgesRef.current = edges;
     }, [edges]);
 
-    // 3) Instantiate the expandNodeHandler BEFORE fetching
-    const expandNodeHandler = useExpandNode(
-        mindmapId,
-        nodesRef,
-        edgesRef,
-        setNodes,
-        setEdges,
-        setLoading,
-        openDrawer
-    );
-
-    // 4) Instantiate the updateNodeHandler BEFORE fetching
+     // 4) Instantiate the updateNodeHandler BEFORE fetching
     const updateNodeHandler = useUpdateNode(
         mindmapId,
         nodesRef,
@@ -59,6 +48,19 @@ export const useRoadmap = (mindmapId, openDrawer) => {
         setEdges,
         setLoading
     )
+    // 3) Instantiate the expandNodeHandler BEFORE fetching
+    const expandNodeHandler = useExpandNode(
+        mindmapId,
+        nodesRef,
+        edgesRef,
+        setNodes,
+        setEdges,
+        setLoading,
+        openDrawer,
+        updateNodeHandler
+    );
+
+   
 
     // 4) Fetch initial mindmap, now passing expandNodeHandler as the last argument
     useFetchMindmap(

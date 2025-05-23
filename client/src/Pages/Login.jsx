@@ -1,11 +1,11 @@
 // src/pages/Login.jsx
-import React, { useState } from 'react';
-import TrueFocus from '../components/Animation/TrueFocus';
-import { useNavigate } from 'react-router-dom';
-import PageLayout from './PageLayout';
-import SocialSignInButtons from '../components/SocialSignInButtons';
-import AuthForm from '../components/AuthForm';
-import SlideButton from '../components/Buttons/SlideButton';
+import React, { useState } from "react";
+import TrueFocus from "../components/Animation/TrueFocus";
+import { useNavigate } from "react-router-dom";
+import PageLayout from "./PageLayout";
+import SocialSignInButtons from "../components/AuthComponents/SocialSignInButtons";
+import AuthForm from "../components/AuthComponents/AuthForm";
+import SlideButton from "../components/Buttons/SlideButton";
 
 const ArrowIcon = () => (
   <svg
@@ -30,7 +30,7 @@ const ArrowIcon = () => (
 
 const Login = () => {
   const navigate = useNavigate();
-  const [socialError, setSocialError] = useState('');
+  const [socialError, setSocialError] = useState("");
 
   return (
     <PageLayout>
@@ -68,7 +68,7 @@ const Login = () => {
             <SlideButton
               text="Register"
               icon={<ArrowIcon />}
-              onClick={() => navigate('/register')}
+              onClick={() => navigate("/register")}
               fullWidth={true}
             />
           </div>

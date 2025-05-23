@@ -1,29 +1,25 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import PageLayout from './PageLayout';
-import SocialSignInButtons from '../components/SocialSignInButtons';
-import SlideButton from '../components/Buttons/SlideButton';
-import ArrowIcon from '../components/Icons/ArrowIcon';
-import LoginIcon from '../components/Icons/LoginIcon';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import PageLayout from "./PageLayout";
+import SocialSignInButtons from "../components/AuthComponents/SocialSignInButtons";
+import SlideButton from "../components/Buttons/SlideButton";
+import ArrowIcon from "../components/Icons/ArrowIcon";
+import LoginIcon from "../components/Icons/LoginIcon";
 
 const LandingPage = () => {
   const navigate = useNavigate();
 
-  const handleLogin = () => navigate('/login');
-  const handleRegister = () => navigate('/register');
+  const handleLogin = () => navigate("/login");
+  const handleRegister = () => navigate("/register");
   const handleSocialError = (error) => console.error(error);
 
   return (
     <PageLayout maxWidth="max-w-md">
       {/* Heading */}
-      <h2 className="text-3xl font-bold  mb-4">
-        Welcome to Path Genie
-      </h2>
+      <h2 className="text-3xl font-bold  mb-4">Welcome to Path Genie</h2>
 
       {/* Subtitle */}
-      <p className=" mb-8">
-        Your personal productivity companion
-      </p>
+      <p className=" mb-8">Your personal productivity companion</p>
 
       {/* Primary Actions */}
       <div className="flex gap-4 mb-8">
@@ -51,6 +47,5 @@ const LandingPage = () => {
     </PageLayout>
   );
 };
-
 
 export default LandingPage;

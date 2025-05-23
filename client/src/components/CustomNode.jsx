@@ -44,7 +44,7 @@ const CustomNode = React.memo(({ data, selected }) => {
         console.error("Failed to update status:", error);
       }
     }
-  }, [data.onUpdate, data.id, status]);
+  }, [data.onUpdate, data.id, status, setStatus]);
 
   // Memoized description toggle handler
   const toggleDescription = useCallback(() => {
@@ -117,7 +117,7 @@ const CustomNode = React.memo(({ data, selected }) => {
             <div className={styles.descriptionContent}>{data.shortDesc}</div>
           </div>
         )}
-        {isHovered && (
+        {data.onExpand && isHovered && (
           <button
             className={styles.expandButton}
             onClick={() => data.onExpand(data.id)}

@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import GradientInput from "../components/Input/GradientInput";
-import SlideButton from "../components/Buttons/SlideButton";
-import { signIn, signUp } from "../lib/auth-client";
-import ArrowIcon from '../components/Icons/ArrowIcon';
-import LoginIcon from '../components/Icons/LoginIcon';
-import constants from "../../constants";
+import GradientInput from "../Input/GradientInput";
+import SlideButton from "../Buttons/SlideButton";
+import { signIn, signUp } from "../../lib/auth-client";
+import ArrowIcon from "../Icons/ArrowIcon";
+import LoginIcon from "../Icons/LoginIcon";
+import constants from "../../../constants";
 
 const AuthForm = ({ isLogin = false }) => {
   const [formData, setFormData] = useState({
@@ -61,7 +61,9 @@ const AuthForm = ({ isLogin = false }) => {
           {
             email: formData.email,
             password: formData.password,
-            callbackURL: `${constants.mode === 'production' ? '' : `${constants.clientUrl}`}/dashboard`,
+            callbackURL: `${
+              constants.mode === "production" ? "" : `${constants.clientUrl}`
+            }/dashboard`,
           },
           {
             onError: (error) => {
@@ -79,7 +81,9 @@ const AuthForm = ({ isLogin = false }) => {
             email: formData.email,
             password: formData.password,
             name: formData.username,
-            callbackURL: `${constants.mode === 'production' ? '' : `${constants.clientUrl}`}/profile`,
+            callbackURL: `${
+              constants.mode === "production" ? "" : `${constants.clientUrl}`
+            }/profile`,
           },
           {
             onError: (error) => {
@@ -251,7 +255,5 @@ const InputField = ({
     {error && <div className="text-red-500 text-xs mt-1">{error}</div>}
   </div>
 );
-
-
 
 export default AuthForm;

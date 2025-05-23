@@ -1,11 +1,11 @@
 // src/components/SocialSignInButtons.jsx
-import React, { useCallback } from 'react';
-import PropTypes from 'prop-types';
-import SlideButton from '../components/Buttons/SlideButton';
-import { signIn } from '../lib/auth-client';
-import GoogleIcon from '../components/Icons/GoogleIcon';
-import GitHubIcon from '../components/Icons/GitHubIcon';
-import constants from '../../constants';
+import React, { useCallback } from "react";
+import PropTypes from "prop-types";
+import SlideButton from "../Buttons/SlideButton";
+import { signIn } from "../../lib/auth-client";
+import GoogleIcon from "../Icons/GoogleIcon";
+import GitHubIcon from "../Icons/GitHubIcon";
+import constants from "../../../constants";
 
 const SocialSignInButtons = ({ onError }) => {
   const handleSocialSignIn = useCallback(
@@ -13,8 +13,12 @@ const SocialSignInButtons = ({ onError }) => {
       try {
         await signIn.social({
           provider,
-          callbackURL: `${constants.mode === 'production' ? '' : `${constants.clientUrl}`}/dashboard`,
-          newUserCallbackURL: `${constants.mode === 'production' ? '' : `${constants.clientUrl}`}/profile`,
+          callbackURL: `${
+            constants.mode === "production" ? "" : `${constants.clientUrl}`
+          }/dashboard`,
+          newUserCallbackURL: `${
+            constants.mode === "production" ? "" : `${constants.clientUrl}`
+          }/profile`,
         });
         console.log(`Successfully signed in with ${provider}`);
       } catch (error) {
@@ -30,14 +34,14 @@ const SocialSignInButtons = ({ onError }) => {
       <SlideButton
         text="Google"
         icon={<GoogleIcon />}
-        onClick={() => handleSocialSignIn('google')}
+        onClick={() => handleSocialSignIn("google")}
         fullWidth={true}
         className="md:w-1/2"
       />
       <SlideButton
         text="GitHub"
         icon={<GitHubIcon />}
-        onClick={() => handleSocialSignIn('github')}
+        onClick={() => handleSocialSignIn("github")}
         fullWidth={true}
         className="md:w-1/2"
       />
@@ -52,8 +56,5 @@ SocialSignInButtons.propTypes = {
 SocialSignInButtons.defaultProps = {
   onError: () => {},
 };
-
-
-
 
 export default SocialSignInButtons;

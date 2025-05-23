@@ -1,19 +1,18 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import TrueFocus from '../components/Animation/TrueFocus';
-import PageLayout from './PageLayout';
-import SocialSignInButtons from '../components/SocialSignInButtons';
-import AuthForm from '../components/AuthForm';
-import SlideButton from '../components/Buttons/SlideButton';
-import LoginIcon from '../components/Icons/LoginIcon';
-
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import TrueFocus from "../components/Animation/TrueFocus";
+import PageLayout from "./PageLayout";
+import SocialSignInButtons from "../components/AuthComponents/SocialSignInButtons";
+import AuthForm from "../components/AuthComponents/AuthForm";
+import SlideButton from "../components/Buttons/SlideButton";
+import LoginIcon from "../components/Icons/LoginIcon";
 
 const Register = () => {
   const navigate = useNavigate();
-  const [socialError, setSocialError] = useState('');
+  const [socialError, setSocialError] = useState("");
 
   return (
-    <PageLayout >
+    <PageLayout>
       {/* Page Heading */}
       <h2 className="text-3xl font-bold  mb-10 text-center">
         <TrueFocus
@@ -48,7 +47,7 @@ const Register = () => {
             <SlideButton
               text="Login"
               icon={<LoginIcon />}
-              onClick={() => navigate('/login')}
+              onClick={() => navigate("/login")}
               fullWidth={true}
             />
           </div>

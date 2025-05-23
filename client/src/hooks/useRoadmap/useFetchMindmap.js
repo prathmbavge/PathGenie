@@ -30,6 +30,7 @@ export const useFetchMindmap = (mindmapId, setNodes, setEdges, setLoading, openD
             () => getMindmap(mindmapId, abortControllerRef.current.signal),
             setLoading,
             async (res) => {
+                // console.log("Fetched mindmap data:", res.data.nodes);
                 // Transform server nodes into React Flow nodes:
                 const reactNodes = res.data.nodes.map((node) => ({
                     id: node._id.toString(),
@@ -39,7 +40,7 @@ export const useFetchMindmap = (mindmapId, setNodes, setEdges, setLoading, openD
                         status: node.status,
                         shortDesc: node.data.shortDesc,
                         label: node.data.label,
-                        onExpand: expandNodeHandler,
+                        onExpand: node.isLeafNode ? expandNodeHandler : undefined,
                         onUpdate: updateNodeHandler,
                         onDelete: async () => {
                             // Handle node deletion here
@@ -50,13 +51,14 @@ export const useFetchMindmap = (mindmapId, setNodes, setEdges, setLoading, openD
                                 node._id,
                                 abortControllerRef.current.signal
                             );
-                            openDrawer(data.resources || []);
+                            console.log("Fetched node resources:", data.resources);
+                            openDrawer(data.resources || {});
                         },
                     },
                     parent: node.parent || null,
                     position: { x: 0, y: 0 },
                 }));
-
+// console.log("React nodes:", reactNodes);
                 // Generate edges from these nodes:
                 const initialEdges = res.data.edges;
 
@@ -66,7 +68,7 @@ export const useFetchMindmap = (mindmapId, setNodes, setEdges, setLoading, openD
                         ...defaultElkOptions,
                         "elk.direction": "RIGHT",
                     });
-                console.log("Layouted nodes:", layoutedNodes);
+                // console.log("Layouted nodes:", layoutedNodes);
                 setNodes(layoutedNodes);
                 setEdges(layoutedEdges);
             },
@@ -77,7 +79,7 @@ export const useFetchMindmap = (mindmapId, setNodes, setEdges, setLoading, openD
                 }
             }
         );
-    }, [mindmapId, setLoading, setNodes, setEdges, openDrawer, expandNodeHandler]);
+    }, [mindmapId, setLoading, setNodes, setEdges, openDrawer, expandNodeHandler, updateNodeHandler]);
 
     // Run once when mindmapId first appears or changes:
     useEffect(() => {

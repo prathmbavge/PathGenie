@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import MpathPlugin from 'mongoose-mpath';
 
 // Mindmaps Schema
 const mindmapSchema = new mongoose.Schema({
@@ -14,38 +13,4 @@ const mindmapSchema = new mongoose.Schema({
 });
 const Mindmap = mongoose.model('Mindmap', mindmapSchema);
 
-// Nodes Schema with Materialized Path
-const nodeSchema = new mongoose.Schema({
-  data: {
-    label: { type: String, required: true },
-    shortDesc : { type: String }, // Short description for quick reference
-    color: { type: String }, // Customization
-    priority: { type: Number }, // For sorting or emphasis
-  },
-  resources: [
-    {
-      type: { type: String, enum: ['links', 'images', 'markdown','videoUrls', 'note'] },
-      url:[ { type: String }],
-      description: { type: String },
-    },
-  ],
-  status: { type: String, enum: ['learning', 'completed'], default: 'learning' },
-  mindmapId: { type: mongoose.Schema.Types.ObjectId, ref: 'Mindmap', required: true },
-  parent: { type: mongoose.Schema.Types.ObjectId, ref: 'Node' },
-  path: { type: String },
-});
-
-// Apply mongoose-mpath plugin
-nodeSchema.plugin(MpathPlugin, {
-  modelName: 'Node',
-  pathSeparator: '#',
-  onDelete: 'REPARENT',
-});
-
-// Indexes for performance
-nodeSchema.index({ path: 1 });
-nodeSchema.index({ mindmapId: 1 });
-
-const Node = mongoose.model('Node', nodeSchema);
-
-export { Mindmap, Node };
+export default Mindmap ;

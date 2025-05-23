@@ -1,172 +1,136 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Handle, Position } from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
+import { FaChevronDown, FaCheck, FaBook, FaExternalLinkAlt } from "react-icons/fa";
+import { RiMindMap } from "react-icons/ri";
+import styles from "./CustomNode.module.css";
 
-const CustomNode = React.memo(({ id, data }) => {
+// Constants for status and colors
+const STATUS = {
+  LEARNING: "learning",
+  COMPLETED: "completed",
+};
+
+const HANDLE_STYLE = {
+  width: "10px",
+  height: "10px",
+  borderRadius: "0",
+};
+
+const CustomNode = React.memo(({ data, selected }) => {
+  const [isDescriptionVisible, setIsDescriptionVisible] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [status, setStatus] = useState(data.status || STATUS.LEARNING);
+  const descriptionRef = useRef(null);
+
+  // Update CSS custom property for description height
+  useEffect(() => {
+    if (descriptionRef.current && data.shortDesc) {
+      descriptionRef.current.style.setProperty(
+        "--content-height",
+        `${descriptionRef.current.scrollHeight}px`
+      );
+    }
+  }, [data.shortDesc]);
+
+  // Memoized status toggle handler
+  const toggleStatus = useCallback(async () => {
+    const newStatus = status === STATUS.COMPLETED ? STATUS.LEARNING : STATUS.COMPLETED;
+    setStatus(newStatus); // Optimistic update
+    if (data.onUpdate) {
+      try {
+        await data.onUpdate(data.id, { status: newStatus });
+      } catch (error) {
+        setStatus(status); // Revert on error
+        console.error("Failed to update status:", error);
+      }
+    }
+  }, [data.onUpdate, data.id, status]);
+
+  // Memoized description toggle handler
+  const toggleDescription = useCallback(() => {
+    setIsDescriptionVisible((prev) => !prev);
+  }, []);
+
+  // Common handle style with dynamic background
+  const getHandleStyle = (isHovered) => ({
+    ...HANDLE_STYLE,
+    backgroundColor: isHovered ? "#ff0072" : "#666",
+  });
 
   return (
     <>
-      <Handle type="target" position={Position.Top} />
+      <Handle type="target" position={Position.Left} style={getHandleStyle(isHovered)} />
       <div
-        className="node"
-        style={{
-          color: "white",
-          background: "linear-gradient(145deg, #1e1e1e, #2d2d2d)",
-          padding: "10px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "space-between",
-          width: "200px",
-          height: "100px",
-          border: "1px solid #333",
-          borderRadius: "8px",
-          boxShadow: isHovered
-            ? "0 6px 8px rgba(0, 0, 0, 0.2)"
-            : "0 4px 6px rgba(0, 0, 0, 0.1)",
-          transition: "transform 0.3s ease, box-shadow 0.3s ease",
-          transform: isHovered ? "scale(1.05)" : "none",
-          cursor: "move",
-        }}
+        className={`${styles.node} ${selected ? styles.selected : ""}`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
+        role="region"
+        aria-label={`Node: ${data.label}`}
       >
-        <button
-          title="Open details"
-          style={{
-            background: "none",
-            border: "none",
-            color: "white",
-            fontWeight: "bold",
-            cursor: "pointer",
-            textDecoration: "none",
-            transition: "color 0.3s ease, text-decoration 0.3s ease",
-            marginBottom: "10px",
-          }}
-          onClick={() => data.openDrawer()}
-          onMouseEnter={(e) => {
-            e.target.style.color = "#ff0072";
-            e.target.style.textDecoration = "underline";
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.color = "#fff";
-            e.target.style.textDecoration = "none";
-          }}
-        >
-          {data.label}
-        </button>
-        <button
-          title="Expand this node"
-          onClick={() => data.onExpand(id)}
-          style={{
-            padding: "5px 10px",
-            background: "transparent",
-            color: "#ff0072",
-            border: "1px solid #ff0072",
-            borderRadius: "4px",
-            cursor: "pointer",
-            transition: "background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease",
-            boxShadow: "0 0 5px rgba(255, 0, 114, 0.5)",
-            display: "flex",
-            alignItems: "center",
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.background = "#ff0072";
-            e.target.style.color = "#fff";
-            e.target.style.boxShadow = "0 0 10px #ff0072";
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.background = "transparent";
-            e.target.style.color = "#ff0072";
-            e.target.style.boxShadow = "0 0 5px rgba(255, 0, 114, 0.5)";
-          }}
-        >
-          <span style={{ marginRight: "5px" }}>+</span> Expand Node
-        </button>
+        <div className={styles.header}>
+          <button
+            className={styles.statusButton}
+            onClick={toggleStatus}
+            title={status === STATUS.COMPLETED ? "Mark as Learning" : "Mark as Completed"}
+            aria-label={status === STATUS.COMPLETED ? "Mark as Learning" : "Mark as Completed"}
+          >
+            {status === STATUS.COMPLETED ? (
+              <FaCheck color="#4ade80" aria-hidden="true" />
+            ) : (
+              <FaBook color="#f472b6" aria-hidden="true" />
+            )}
+          </button>
+          <div className={styles.controls}>
+            <FaExternalLinkAlt
+              className={`${styles.icon} ${isHovered ? styles.hoverEffect : ""}`}
+              onClick={data.openDrawer}
+              title="Open resources drawer"
+              aria-label="Open resources drawer"
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === "Enter" && data.openDrawer()}
+            />
+            {data.shortDesc && (
+              <FaChevronDown
+                className={`${styles.icon} ${isDescriptionVisible ? styles.rotate : ""} ${
+                  isHovered ? styles.hoverEffect : ""
+                }`}
+                onClick={toggleDescription}
+                title={isDescriptionVisible ? "Hide description" : "Show description"}
+                aria-label={isDescriptionVisible ? "Hide description" : "Show description"}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === "Enter" && toggleDescription()}
+              />
+            )}
+          </div>
+        </div>
+        <hr className={styles.separator} aria-hidden="true" />
+        <div className={styles.label}>{data.label}</div>
+        <hr className={styles.separator} aria-hidden="true" />
+        {data.shortDesc && (
+          <div
+            className={`${styles.description} ${isDescriptionVisible ? styles.visible : styles.hidden}`}
+            ref={descriptionRef}
+            aria-hidden={!isDescriptionVisible}
+          >
+            <div className={styles.descriptionContent}>{data.shortDesc}</div>
+          </div>
+        )}
+        {isHovered && (
+          <button
+            className={styles.expandButton}
+            onClick={() => data.onExpand(data.id)}
+            title="Expand this node"
+            aria-label="Expand this node"
+          >
+            <RiMindMap className={styles.expandIcon} aria-hidden="true" />
+          </button>
+        )}
       </div>
-      <Handle type="source" position={Position.Bottom} />
+      <Handle type="source" position={Position.Right} style={getHandleStyle(isHovered)} />
     </>
   );
 });
 
 export default CustomNode;
-
-// import React from "react";
-// import { Handle, Position } from "@xyflow/react";
-// import { FiChevronRight } from "react-icons/fi";
-
-// const CustomNode = ({ data }) => {
-//   return (
-//     <>
-//       <Handle
-//         type="target"
-//         position={Position.Left}
-//         style={{ background: "transparent", border: "none" }}
-//       />
-
-//       <div
-//         style={{
-//           backgroundColor: "#1c1c1c",
-//           border: "1px solid #333",
-//           borderRadius: "12px",
-//           width: "240px",
-//           height: "120px",
-//           boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4)",
-//           display: "flex",
-//           flexDirection: "column",
-//           justifyContent: "space-between",
-//           padding: "12px 16px",
-//           color: "white",
-//           fontFamily: "sans-serif",
-//         }}
-//       >
-//         {/* Top Row */}
-//         <div
-//           style={{
-//             display: "flex",
-//             justifyContent: "space-between",
-//             alignItems: "center",
-//           }}
-//         >
-//           {/* Circle Indicator */}
-//           <div
-//             style={{
-//               width: "20px",
-//               height: "20px",
-//               borderRadius: "50%",
-//               border: "2px solid #555",
-//             }}
-//           />
-
-//           {/* Arrow */}
-//           <FiChevronRight
-//             size={20}
-//             color="#999"
-//             style={{ cursor: "pointer" }}
-//           />
-//         </div>
-
-//         {/* Centered Label */}
-//         <div
-//           style={{
-//             textAlign: "center",
-//             fontSize: "16px",
-//             fontWeight: "500",
-//             marginBottom: "12px",
-//           }}
-//         >
-//           {data.label || "Frontend Development"}
-//         </div>
-//       </div>
-
-//       <Handle
-//         type="source"
-//         position={Position.Right}
-//         style={{ background: "transparent", border: "none" }}
-//       />
-//     </>
-//   );
-// };
-
-// export default CustomNode;

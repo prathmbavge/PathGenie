@@ -18,6 +18,10 @@ const FlowComponent = ({ nodes, edges, onNodesChange, onEdgesChange }) => {
         nodeTypes={nodeTypes}
         fitView
         proOptions={proOptions}
+        width={"100%"}
+        minZoom={0.1}
+        maxZoom={2}
+
       >
         <MiniMap
           nodeColor={(node) => node.color || "#ff0072"}

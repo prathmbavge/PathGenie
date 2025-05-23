@@ -1,0 +1,145 @@
+.node {
+  background-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  border: 1px solid var(--border-color, #3f3f46);
+  padding: 10px;
+  display: flex;
+  color: #ffffff;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  will-change: transform, box-shadow;
+  width: 100%;
+  max-width: 230px;
+  min-width: 200px;
+  position: relative;
+  overflow: hidden;
+}
+
+.node:hover {
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.node.selected {
+  border: 1.5px double #ffaaf5;
+  box-shadow: 0 0 20px rgba(96, 165, 250, 0.4);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
+}
+
+.statusButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  transition: all 0.2s ease;
+}
+
+.statusButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 6px; /* Adjusted gap for better spacing with new icon */
+}
+
+.label {
+  font-weight: 600;
+  color: white;
+  text-align: center;
+  padding: 4px 0;
+}
+
+.icon {
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: #d1d5db;
+  transition: all 0.2s ease;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.icon:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1);
+}
+
+.hoverEffect {
+  color: #ffffff;
+}
+
+.rotate {
+  transform: rotate(180deg);
+}
+
+.separator {
+  width: 100%;
+  height: 1px;
+  background: #3f3f46;
+  border: none;
+  margin: 8px 0;
+}
+
+.description {
+  width: 100%;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: height;
+  margin-top: 8px;
+}
+
+.description.hidden {
+  height: 0;
+  opacity: 0;
+}
+
+.description.visible {
+  height: var(--content-height);
+  opacity: 1;
+}
+
+.descriptionContent {
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #e5e7eb;
+  line-height: 1.4;
+}
+
+.expandButton {
+  position: absolute;
+  top: -80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 8px;
+  cursor: pointer;
+  transition: top 0.3s ease;
+}
+
+.node:hover .expandButton {
+  top: 3px;
+}
+
+.expandIcon {
+  font-size: 1.2rem;
+  color: #ffffff;
+}
+
+.expandButton:hover .expandIcon {
+  color: #ff89b8;
+  transition: .5s;
+}

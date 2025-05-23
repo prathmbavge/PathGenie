@@ -1,4 +1,4 @@
-import { showErrorToast } from './toast';
+import { showErrorToast } from './toastUtils';
 
 /**
  * Handles API requests with loading state and error handling.

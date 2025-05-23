@@ -3,7 +3,7 @@ import { useSession, signOut } from "../lib/auth-client";
 import { useNavigate } from "react-router-dom";
 import { getUserProfile, updateUserProfile } from "../api/userApi";
 import { requestHandler } from "../../utils/index";
-import { showSuccessToast } from "../../utils/toast";
+import { showSuccessToast } from "../../utils/toastUtils";
 import SlideButton from "../components/Buttons/SlideButton";
 
 const Profile = () => {
@@ -25,7 +25,10 @@ const Profile = () => {
       await signOut();
       navigate("/login");
     } catch (err) {
-      console.error("Logout error:", err instanceof Error ? err.message : "Unknown error");
+      console.error(
+        "Logout error:",
+        err instanceof Error ? err.message : "Unknown error"
+      );
     }
   }, [navigate]);
 
@@ -80,7 +83,9 @@ const Profile = () => {
     return (
       <div className="min-h-screen flex items-center justify-center  ">
         <div className="shadow-lg p-8 sm:p-12 w-full max-w-md">
-          <p className="text-center text-gray-600 dark:text-gray-300">Loading...</p>
+          <p className="text-center text-gray-600 dark:text-gray-300">
+            Loading...
+          </p>
         </div>
       </div>
     );
@@ -107,7 +112,11 @@ const Profile = () => {
             No session found. Please log in.
           </p>
           <div className="mt-4 text-center">
-            <SlideButton text="Login" onClick={() => navigate("/login")} fullWidth />
+            <SlideButton
+              text="Login"
+              onClick={() => navigate("/login")}
+              fullWidth
+            />
           </div>
         </div>
       </div>
@@ -139,7 +148,9 @@ const Profile = () => {
             </div>
           </div>
           {isProfileLoading ? (
-            <p className="text-center text-gray-500 dark:text-gray-400">Loading profile data...</p>
+            <p className="text-center text-gray-500 dark:text-gray-400">
+              Loading profile data...
+            </p>
           ) : profileError ? (
             <p className="text-center text-red-500">{profileError}</p>
           ) : (

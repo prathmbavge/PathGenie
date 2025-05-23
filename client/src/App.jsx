@@ -165,15 +165,15 @@ export default function App() {
         </div>
 
         <Toaster
-          position="top-center"
+          position="top-right"
           toastOptions={{
-            duration: 3000,
+            duration: 2000,
             style: {
-              fontWeight: "bold",
-              fontSize: "1.25rem",
+              fontSize: "1.2rem",
               fontFamily: "Times New Roman, serif",
-              backgroundColor: "#000",
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
               color: "#fff",
+              borderRadius: "0",
             },
           }}
         />

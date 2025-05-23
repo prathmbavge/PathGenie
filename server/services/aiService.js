@@ -11,23 +11,21 @@ const fetchPerplexityData = async (type, input) => {
     case 'basicMindmap':
       systemPrompt = `
 Generate an initial mindmap structure for the given topic in JSON format. The JSON should have a "nodes" array, where each node is an object with:
-- "data": { "label": "node label" }
-- "position": { "x": number, "y": number }
+- "data": { "label": "node label", "shortDesc": "short description" }
 - "parentIndex": number or null
 The root node should have parentIndex: null, and other nodes should have parentIndex pointing to the index of their parent in the nodes array.
-Provide at least 10 nodes with a hierarchical structure, including multiple levels.
-Assign positions such that nodes are arranged in a tree layout, with the root at (0,0), level 1 at y=100, level 2 at y=200, etc., and spaced horizontally by 100 units. The response should be only valid JSON object(**No Other text**).
+Provide at only 10 nodes with a hierarchical structure, including multiple levels.
+The response should be only valid JSON object(**No Other text**).
 `;
       break;
     case 'subtopics':
       systemPrompt = `
 Generate subtopics for the given parent node label in JSON format. The JSON should have a "nodes" array, where each node is an object with:
-- "data": { "label": "node label" }
-- "position": { "x": number, "y": number }
+- "data": { "label": "node label", "shortDesc": "short description" }
 - "parentIndex": number or null
 The first node should have parentIndex: null (it will connect to the parent), and subsequent nodes can have parentIndex pointing to the index of their parent in the nodes array.
 Provide 2-3 subtopics.
-Assign positions such that nodes are positioned below the parent, e.g., y=150 for the first node, y=250 for others, with x offsets of 100 units. The response should be only valid JSON object(**No Other text**).
+The response should be only valid JSON object(**No Other text**).
 `;
       break;
     case 'resources':

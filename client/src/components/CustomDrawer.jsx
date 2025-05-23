@@ -25,7 +25,7 @@ const DrawerContent = memo(({ content, onClose }) => {
                       href={link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-neon-blue hover:text-neon-pink focus:outline focus:outline-2 focus:outline-neon-pink"
+                      className="text-neon-blue hover:text-neon-pink focus:outline focus:outline-neon-pink"
                       aria-label={`External link to ${link}`}
                     >
                       {link}

@@ -1,12 +1,12 @@
 // src/pages/Dashboard.jsx
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import GradientInput from '../components/Input/GradientInput';
-import SlideButton from '../components/Buttons/SlideButton';
-import GlowCard from '../components/Cards/GlowCard';
-import { requestHandler } from '../../utils/index';
-import { showSuccessToast } from '../../utils/toast';
-import { createMindmap, getAllMindmaps } from '../api/mindmapApi';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import GradientInput from "../components/Input/GradientInput";
+import SlideButton from "../components/Buttons/SlideButton";
+import GlowCard from "../components/Cards/GlowCard";
+import { requestHandler } from "../../utils/index";
+import { showSuccessToast } from "../../utils/toastUtils";
+import { createMindmap, getAllMindmaps } from "../api/mindmapApi";
 
 const MagicIcon = () => (
   <svg
@@ -23,14 +23,14 @@ const MagicIcon = () => (
 );
 
 const Dashboard = () => {
-  const [title, setTitle] = useState('');
+  const [title, setTitle] = useState("");
   const [loading, setLoading] = useState(false);
   const [mindmaps, setMindmaps] = useState([]);
   const navigate = useNavigate();
 
   const handleCreateMindmap = async () => {
     if (!title.trim()) {
-      alert('Please enter a title.');
+      alert("Please enter a title.");
       return;
     }
 
@@ -40,12 +40,12 @@ const Dashboard = () => {
       setLoading,
       (res) => {
         const mindmapId = res.data.mindmap._id;
-        showSuccessToast('Mindmap created successfully');
+        showSuccessToast("Mindmap created successfully");
         navigate(`/mindmap/${mindmapId}`);
       },
       (error) => {
-        console.error('Error creating mindmap:', error);
-        alert('Failed to create mindmap.');
+        console.error("Error creating mindmap:", error);
+        alert("Failed to create mindmap.");
       }
     );
   };
@@ -58,11 +58,11 @@ const Dashboard = () => {
         setLoading,
         (res) => {
           setMindmaps(res.data.mindmaps || []);
-          showSuccessToast('Fetched mindmaps successfully');
+          showSuccessToast("Fetched mindmaps successfully");
         },
         (error) => {
-          console.error('Error fetching mindmaps:', error);
-          alert('Failed to fetch mindmaps.');
+          console.error("Error fetching mindmaps:", error);
+          alert("Failed to fetch mindmaps.");
         }
       );
     };
@@ -93,7 +93,7 @@ const Dashboard = () => {
 
           <div className="w-full mt-4">
             <SlideButton
-              text={loading ? 'Creating...' : 'Do Magic'}
+              text={loading ? "Creating..." : "Do Magic"}
               onClick={handleCreateMindmap}
               disabled={loading}
               fullWidth={true}
@@ -130,18 +130,22 @@ const Dashboard = () => {
                       {mindmap.title}
                     </h2>
                     <p className="text-gray-400 mt-2">
-                      {new Date(mindmap.createdAt).toLocaleDateString(undefined, {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
+                      {new Date(mindmap.createdAt).toLocaleDateString(
+                        undefined,
+                        {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        }
+                      )}
                     </p>
                     <p className="text-gray-400 mt-1">
-                      {mindmap.nodeCount} node{mindmap.nodeCount === 1 ? '' : 's'}
+                      {mindmap.nodeCount} node
+                      {mindmap.nodeCount === 1 ? "" : "s"}
                     </p>
                     {mindmap.tags && (
                       <p className="text-gray-400 mt-1 break-words text-center">
-                        {mindmap.tags.join(', ')}
+                        {mindmap.tags.join(", ")}
                       </p>
                     )}
                     <p className="text-gray-400 mt-1 capitalize">

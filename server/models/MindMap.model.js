@@ -18,12 +18,9 @@ const Mindmap = mongoose.model('Mindmap', mindmapSchema);
 const nodeSchema = new mongoose.Schema({
   data: {
     label: { type: String, required: true },
+    shortDesc : { type: String }, // Short description for quick reference
     color: { type: String }, // Customization
     priority: { type: Number }, // For sorting or emphasis
-  },
-  position: {
-    x: { type: Number, required: true },
-    y: { type: Number, required: true },
   },
   resources: [
     {

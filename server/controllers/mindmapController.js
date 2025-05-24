@@ -155,7 +155,7 @@ export default {
 
         try {
             const userProfile = { profession: user.profession || 'unknown', experienceYears: user.experienceYears || 0 };
-            const { nodes: aiNodes } = await generateSubtopics({label: parentNode.data.label, shortDesc: parentNode.data.shortDesc});
+            const { nodes: aiNodes } = await generateSubtopics(parentNode.data.label + '-' + parentNode.data.shortDesc, userProfile);
             if (!aiNodes || aiNodes.length === 0) {
                 throw new ApiError(500, "Failed to generate subtopics");
             }

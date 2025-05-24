@@ -12,7 +12,7 @@ const Navbar = () => {
   const { data: session, isPending } = authClient.useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const isNavbarVisible = useNavbarVisibility(2000, 50);
+  const isNavbarVisible = useNavbarVisibility(800, 43);
 
   // Toggle mobile menu open/close
   const toggleMenu = useCallback(() => {
@@ -46,7 +46,7 @@ const Navbar = () => {
           disabled={isSigningOut}
           icon={
             <svg
-              className="w-6 h-6 text-gray-800 dark:text-white"
+              className="w-5 h-5 text-gray-800 dark:text-white"
               aria-hidden="true"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -73,7 +73,7 @@ const Navbar = () => {
         onClick={() => navigate("/login")}
         icon={
           <svg
-            className="w-6 h-6 text-gray-800 dark:text-white"
+            className="w-5 h-5 text-gray-800 dark:text-white"
             aria-hidden="true"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -95,12 +95,12 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed w-full top-0 z-50 mt-1 transition-transform duration-300 ${
+      className={`fixed w-full top-0 z-50 transition-transform duration-300 ${
         isNavbarVisible ? "transform translate-y-0" : "transform -translate-y-full"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 w-full">
+        <div className="flex items-center justify-between h-15 w-full">
           {/* Logo */}
           <div className="flex-shrink-0 text-white">
             <NavLink to="/">

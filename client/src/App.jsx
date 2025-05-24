@@ -94,7 +94,7 @@ export default function App() {
   // Show a full-screen loader while auth is initializing
   if (isPending) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center">
+      <div className="flex h-screen w-screen items-center justify-center bg-black bg-blur-50 backdrop-blur ">
         <span className="text-gray-500">Checking authentication…</span>
       </div>
     );

@@ -87,7 +87,7 @@ export const useExpandNode = (
                 }
             );
         },
-        [mindmapId, setLoading, setNodes, setEdges, openDrawer, nodesRef, edgesRef]
+        [mindmapId, setLoading, setNodes, setEdges, openDrawer, nodesRef, edgesRef, updateNodeHandler]
     );
 
     return expandNodeHandler;

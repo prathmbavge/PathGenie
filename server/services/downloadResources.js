@@ -89,6 +89,23 @@ const downloadResources = asyncHandler(async (req, res) => {
         const doc = new PDFDocument({ margin: 50 });
         doc.pipe(res);
 
+        // — Watermark ——————————————————————————————
+        // const pageWidth = doc.page.width;
+        // const pageHeight = doc.page.height;
+
+        // doc.save();
+        // doc.font('Helvetica-Bold')
+        //     .fontSize(80)
+        //     .fillColor('lightgray')
+        //     .opacity(0.5)
+        //     .rotate(-45, { origin: [pageWidth / 2, pageHeight / 2] })
+        //     .text('PathGenie', pageWidth / 2, pageHeight / 2, {
+        //         align: 'center',
+        //         valign: 'center',   
+        //     });
+        // doc.restore();
+
+
         // — Header ——————————————————————————————
         doc
             .font('Helvetica-Bold')
@@ -247,7 +264,7 @@ const downloadResources = asyncHandler(async (req, res) => {
         );
 
         for (const md of nodeData.resources.markdown) {
-            
+
 
             // 2b) Tokenize the full Markdown block
             const tokens = mdParser.parse(md.content, {});
@@ -271,7 +288,7 @@ const downloadResources = asyncHandler(async (req, res) => {
                     else if (level === 4) headingLevel = HeadingLevel.HEADING_4;
                     else if (level === 5) headingLevel = HeadingLevel.HEADING_5;
                     else if (level === 6) headingLevel = HeadingLevel.HEADING_6;
-                    
+
                     // (You can extend for deeper headings if desired.)
 
                     markdownChildren.push(

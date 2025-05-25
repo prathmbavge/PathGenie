@@ -1,4 +1,10 @@
-import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import { Handle, Position } from "@xyflow/react";
 import {
   FaChevronDown,
@@ -54,7 +60,7 @@ const CustomNode = React.memo(({ data, selected }) => {
     } else if (data.onExpand) {
       data.onExpand(data.id);
     }
-  }, [data.onCollapse, data.onExpand, data.id,]);
+  }, [data.onCollapse, data.onExpand, data.id]);
 
   // Base styles that don't change
   const baseHandleStyle = {
@@ -113,7 +119,10 @@ const CustomNode = React.memo(({ data, selected }) => {
           <div className={styles.leftGroup}>
             <button
               className={styles.statusButton}
-              onClick={toggleStatus}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleStatus();
+              }}
               aria-label={`Mark as ${
                 status === STATUS.COMPLETED ? "Learning" : "Completed"
               }`}
@@ -135,7 +144,10 @@ const CustomNode = React.memo(({ data, selected }) => {
             {data.shortDesc && (
               <button
                 className={styles.descriptionToggle}
-                onClick={toggleDescription}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleDescription();
+                }}
                 aria-label={`${
                   isDescriptionVisible ? "Hide" : "Show"
                 } description`}
@@ -152,7 +164,12 @@ const CustomNode = React.memo(({ data, selected }) => {
             )}
             <button
               className={styles.resourceButton}
-              onClick={data.openDrawer}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (data.openDrawer) {
+                  data.openDrawer();
+                }
+              }}
               aria-label="Open resources"
             >
               <FaExternalLinkAlt
@@ -180,7 +197,10 @@ const CustomNode = React.memo(({ data, selected }) => {
         type="source"
         position={Position.Right}
         style={handleStyle}
-        onClick={handleExpandCollapse}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleExpandCollapse();
+        }}
       >
         <div className={styles.handleIcon}>
           {data.onCollapse ? (

@@ -5,20 +5,8 @@ import mongoose from "mongoose";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { generateBasicMindmap, generateSubtopics, gatherResources } from "../services/aiService.js";
-
-import PDFDocument from 'pdfkit';
-import { Document, Paragraph, TextRun, Packer, ImageRun, HeadingLevel } from 'docx';
-import { marked } from 'marked';
-import axios from 'axios';
-import fs from 'fs';
-import path from 'path'
-import { MarkdownRenderer } from 'pdfkit-markdown';
-import remarkParse from 'remark-parse';
-import { unified } from 'unified';
-import MarkdownIt from 'markdown-it';
-import HTMLtoDocx from 'html-to-docx';
 import downloadResources from "../services/downloadResources.js";
-const __dirname = path.resolve();
+
 
 // Helper function to generate edges between nodes
 const generateEdges = (nodes) => {
@@ -55,13 +43,6 @@ const generateEdges = (nodes) => {
     };
 };
 
-// **Helper Function: Download Image**
-const downloadImage = async (url) => {
-    const response = await axios.get(url, { responseType: 'arraybuffer' });
-    const imagePath = path.join(__dirname, 'temp_image.png');
-    fs.writeFileSync(imagePath, response.data);
-    return imagePath;
-};
 
 // Helper function to ensure valid resources field
 const ensureValidResources = (node) => {

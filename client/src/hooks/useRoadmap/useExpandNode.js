@@ -178,7 +178,7 @@ export const useExpandNode = (
                     node._id,
                     abortControllerRef.current.signal
                   );
-                  openDrawer(data.resources || {});
+                  openDrawer(data.resources || {}, node._id);
                 } catch (error) {
                   if (error.name !== "AbortError") {
                     showErrorToast("Failed to fetch node resources.");

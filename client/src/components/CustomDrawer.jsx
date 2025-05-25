@@ -5,10 +5,12 @@ import React, {
   lazy,
   memo,
   useState,
+  useEffect,
 } from "react";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+// eslint-disable-next-line no-unused-vars
 import { AnimatePresence, motion } from "framer-motion";
 import {
   FiChevronDown,
@@ -74,7 +76,12 @@ const AccordionSection = memo(({ title, icon: Icon, glow, children }) => {
 
 const DrawerContent = memo(({ content, onClose, setLoading, nodeId }) => {
   const downloadResources = useDownloadResources(setLoading);
-  console.log("DrawerContent rendered with content:", content, "nodeId:", nodeId);
+  // console.log(
+  //   "DrawerContent rendered with content:",
+  //   content,
+  //   "nodeId:",
+  //   nodeId
+  // );
   const [downloadFormat, setDownloadFormat] = useState("pdf");
 
   const handleDownload = useCallback(() => {
@@ -268,9 +275,19 @@ const DrawerContent = memo(({ content, onClose, setLoading, nodeId }) => {
   );
 });
 
-const CustomDrawer = memo(
+const CustomDrawer = React.memo(
   ({ isOpen, onClose, content, nodeId, setLoading, children }) => {
     const panelGroupRef = useRef(null);
+
+    useEffect(() => {
+      if (panelGroupRef.current) {
+        if (isOpen) {
+          panelGroupRef.current.setLayout([55, 45]);
+        } else {
+          panelGroupRef.current.setLayout([100, 0]);
+        }
+      }
+    }, [isOpen]);
 
     const handleClose = useCallback(() => {
       onClose();
@@ -284,7 +301,7 @@ const CustomDrawer = memo(
           autoSaveId="custom-drawer"
           className="h-full"
         >
-          <Panel minSize={40} className="overflow-hidden">
+          <Panel minSize={10} className="overflow-hidden">
             <main className="h-full">{children}</main>
           </Panel>
 
@@ -320,5 +337,7 @@ const CustomDrawer = memo(
     );
   }
 );
+
+CustomDrawer.displayName = "CustomDrawer";
 
 export default CustomDrawer;

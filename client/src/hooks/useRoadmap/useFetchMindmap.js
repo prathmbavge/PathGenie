@@ -156,6 +156,8 @@ export const useFetchMindmap = (
         async (res) => {
           const nodes = res.data.nodes;
           const edges = res.data.edges;
+          // console.log("Fetched mindmap nodes:", nodes);
+          // console.log("Fetched mindmap edges:", edges);
 
           // Single-pass parent mapping and node ID set
           const parentMap = new Map();
@@ -178,9 +180,9 @@ export const useFetchMindmap = (
               reactNodes[nodeIndex++] = {
                 id: `wrapper-${nodeId}`,
                 type: "group",
-                data: { label: "" },
+                data: { label: "ok" },
                 position: { x: 0, y: 0 },
-                style: { width: 0, height: 0, Background: 'transparent', border: '1px solid #ddd' },
+                style: { width: 50, height: 50, Background: 'transparent', border: '1px solid #ddd' },
               };
             }
           });
@@ -212,7 +214,7 @@ export const useFetchMindmap = (
                       node._id,
                       abortControllerRef.current.signal
                     );
-                    console.log("Fetched node resources:", data.resources);
+                    // console.log("Fetched node resources:", data.resources);
                     openDrawer(data.resources || {}, node._id);
                   } catch (error) {
                     if (error.name !== "AbortError") {

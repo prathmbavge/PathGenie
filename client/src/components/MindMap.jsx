@@ -57,104 +57,98 @@
 //   );
 // };
 
-// export default MindMap;
-
-// src/pages/MindMap.jsx
-import React, {
-  useState,
-  useCallback,
-  useMemo,
-  useEffect,
-} from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { ReactFlowProvider } from "@xyflow/react";
 import FlowComponent from "./FlowComponent";
 import CustomDrawer from "./CustomDrawer";
 import { useRoadmap } from "../hooks/useRoadmap";
+import debounce from "lodash/debounce";
 
-// Wrapper component to use useRoadmap within ReactFlowProvider
-// (unchanged, except it now receives `openDrawer` from above)
-const RoadmapWrapper = ({
-  mindmapId,
-  openDrawer,
-  setLoading,
-  searchQuery,
-  onSearch,
-}) => {
-  const {
-    nodes,
-    setNodes,
-    edges,
-    setEdges,
-    focusNode,
-  } = useRoadmap(mindmapId, openDrawer); // pass openDrawer into your hook
 
-  // Memoize nodes with highlighting based on search query
-  const updatedNodes = useMemo(() => {
-    if (!searchQuery) return nodes;
-    return nodes.map((node) => ({
-      ...node,
-      data: {
-        ...node.data,
-        highlighted: node.data.label
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase()),
-      },
-    }));
-  }, [nodes, searchQuery]);
+const RoadmapWrapper = React.memo(
+  ({ mindmapId, openDrawer, setLoading, searchQuery, onSearch }) => {
+    const { nodes, edges, focusNode, onEdgesChange, onNodesChange } = useRoadmap(mindmapId, openDrawer);
 
-  // Focus on the first matched node when search query changes
-  useEffect(() => {
-    if (searchQuery) {
-      const matchedNode = updatedNodes.find(
-        (node) => node.data.highlighted
-      );
-      if (matchedNode) focusNode(matchedNode.id);
-    }
-  }, [searchQuery, updatedNodes, focusNode]);
+    // Compute highlighted nodes based on search query
+    const highlightedNodes = useMemo(() => {
+      if (!searchQuery) {
+        return nodes.map((node) => ({
+          ...node,
+          data: { ...node.data, highlighted: false },
+        }));
+      }
+      const lowerQuery = searchQuery.toLowerCase();
+      return nodes.map((node) => ({
+        ...node,
+        data: {
+          ...node.data,
+          highlighted: node.data.label.toLowerCase().includes(lowerQuery),
+        },
+      }));
+    }, [nodes, searchQuery]);
 
-  return (
-    <FlowComponent
-      nodes={updatedNodes}
-      edges={edges}
-      onNodesChange={setNodes}
-      onEdgesChange={setEdges}
-      searchQuery={searchQuery}
-      onSearch={onSearch}
-    />
-  );
-};
+    // Debounced focus on first matched node
+    const debouncedFocusNode = useMemo(
+      () =>
+        debounce((nodes, focusNode) => {
+          const matchedNode = nodes.find((node) => node.data.highlighted);
+          if (matchedNode) {
+            focusNode(matchedNode.id);
+          }
+        }, 300),
+      [focusNode]
+    );
+
+    // Trigger focus when searchQuery or highlightedNodes change
+    useEffect(() => {
+      debouncedFocusNode(highlightedNodes, focusNode);
+      return () => {
+        debouncedFocusNode.cancel(); // Cleanup debounce on unmount or change
+      };
+    }, [searchQuery, highlightedNodes, debouncedFocusNode]);
+
+    return (
+      <FlowComponent
+        nodes={highlightedNodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        searchQuery={searchQuery}
+        onSearch={onSearch}
+        onFocusNode={focusNode}
+      />
+    );
+  }
+);
+
+RoadmapWrapper.displayName = "RoadmapWrapper";
 
 const MindMap = () => {
   const { mindmapId } = useParams();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [drawerContent, setDrawerContent] = useState(null);
-  const [nodeId, setNodeId] = useState(null); // Store nodeId if needed
+  const [nodeId, setNodeId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // 1️⃣ Define openDrawer here:
+  // Handle search input without debouncing
+  const handleSearch = useCallback((e) => {
+    setSearchQuery(e.target.value); // Update search query immediately
+  }, []);
+
   const openDrawer = useCallback((resources, nodeId) => {
     setDrawerContent(resources);
-    setNodeId(nodeId); // Store nodeId if needed
+    setNodeId(nodeId);
     setIsDrawerOpen(true);
   }, []);
 
   const closeDrawer = useCallback(() => {
     setIsDrawerOpen(false);
     setDrawerContent(null);
+    setNodeId(null);
   }, []);
 
-  const handleSearch = useCallback((e) => {
-    setSearchQuery(e.target.value);
-  }, []);
-
-  // Pass only `resources` to openDrawer; FlowComponent/onNodeClick
-  // const handleNodeClick = useCallback((resources) => {
-  //   openDrawer(resources);
-  // }, [openDrawer]);
-
-  // Memoize the wrapped component
   const flowContent = useMemo(
     () => (
       <ReactFlowProvider>

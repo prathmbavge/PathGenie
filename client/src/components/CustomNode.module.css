@@ -2,19 +2,18 @@
   background: rgba(23, 23, 23, 0.9);
   backdrop-filter: blur(8px);
   border: 1px solid #374151;
-  padding: 1rem;
+  padding: .5rem;
   color: #f3f4f6;
   width: 240px;
   min-height: 120px;
   transition: all 0.2s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  position: relative;
   overflow: visible;
   will-change: transform, opacity;
 }
 
 .node:hover {
-  transform: translateY(-2px);
+  transform: translateY(-5px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 

@@ -15,7 +15,20 @@ export const requestHandler = async (apiCall, setLoading, onSuccess) => {
 
   try {
     const response = await apiCall();
-    if (response?.success) {
+    // Create a Blob URL and trigger download
+    // Get content type from headers
+if (response.type === 'application/pdf') {
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: response.type }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'mindmap.pdf');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    }
+    console.log(response);
+    if (response?.success || response?.status === 200) {
       onSuccess(response);
     }
   } catch (error) {

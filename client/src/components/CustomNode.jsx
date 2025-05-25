@@ -1,19 +1,18 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Handle, Position } from "@xyflow/react";
-import { FaChevronDown, FaCheck, FaBook, FaExternalLinkAlt } from "react-icons/fa";
-import { RiMindMap } from "react-icons/ri";
+import {
+  FaChevronDown,
+  FaCheck,
+  FaBook,
+  FaExternalLinkAlt,
+  FaExpandAlt,
+  FaCompressAlt,
+} from "react-icons/fa";
 import styles from "./CustomNode.module.css";
 
-// Constants for status and colors
 const STATUS = {
   LEARNING: "learning",
   COMPLETED: "completed",
-};
-
-const HANDLE_STYLE = {
-  width: "10px",
-  height: "10px",
-  borderRadius: "0",
 };
 
 const CustomNode = React.memo(({ data, selected }) => {
@@ -22,7 +21,6 @@ const CustomNode = React.memo(({ data, selected }) => {
   const [status, setStatus] = useState(data.status || STATUS.LEARNING);
   const descriptionRef = useRef(null);
 
-  // Update CSS custom property for description height
   useEffect(() => {
     if (descriptionRef.current && data.shortDesc) {
       descriptionRef.current.style.setProperty(
@@ -32,103 +30,174 @@ const CustomNode = React.memo(({ data, selected }) => {
     }
   }, [data.shortDesc]);
 
-  // Memoized status toggle handler
   const toggleStatus = useCallback(async () => {
-    const newStatus = status === STATUS.COMPLETED ? STATUS.LEARNING : STATUS.COMPLETED;
-    setStatus(newStatus); // Optimistic update
+    const newStatus =
+      status === STATUS.COMPLETED ? STATUS.LEARNING : STATUS.COMPLETED;
+    setStatus(newStatus);
     if (data.onUpdate) {
       try {
         await data.onUpdate(data.id, { status: newStatus });
       } catch (error) {
-        setStatus(status); // Revert on error
+        setStatus(status);
         console.error("Failed to update status:", error);
       }
     }
   }, [data.onUpdate, data.id, status, setStatus]);
 
-  // Memoized description toggle handler
   const toggleDescription = useCallback(() => {
     setIsDescriptionVisible((prev) => !prev);
   }, []);
 
-  // Common handle style with dynamic background
-  const getHandleStyle = (isHovered) => ({
-    ...HANDLE_STYLE,
-    backgroundColor: isHovered ? "#ff0072" : "#666",
-  });
+  const handleExpandCollapse = useCallback(() => {
+    if (data.onCollapse) {
+      data.onCollapse(data.id);
+    } else if (data.onExpand) {
+      data.onExpand(data.id);
+    }
+  }, [data.onCollapse, data.onExpand, data.id,]);
+
+  // Base styles that don't change
+  const baseHandleStyle = {
+    color: "#fff",
+    width: "30px",
+    height: "30px",
+    transition: "all 0.2s ease",
+    borderRadius: "0%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  };
+
+  // Function to compute dynamic colors based on hover and props
+  const getHandleColors = (isHovered) => {
+    if (data.onCollapse) {
+      return {
+        backgroundColor: isHovered ? "#f87171" : "#ef4444",
+        borderColor: isHovered ? "#dc2626" : "#b91c1c",
+      };
+    }
+    if (data.onExpand) {
+      return {
+        backgroundColor: isHovered ? "#4ade80" : "#22c55e",
+        borderColor: isHovered ? "#16a34a" : "#15803d",
+      };
+    }
+    return {
+      backgroundColor: isHovered ? "#ff0072" : "#4b5563",
+      borderColor: isHovered ? "#cc0060" : "#374151",
+    };
+  };
+
+  // Memoized handle style, recomputed only when dependencies change
+  const handleStyle = useMemo(
+    () => ({
+      ...baseHandleStyle,
+      ...getHandleColors(isHovered),
+    }),
+    [isHovered, data.onCollapse, data.onExpand]
+  );
 
   return (
     <>
-      <Handle type="target" position={Position.Left} style={getHandleStyle(isHovered)} />
+      <Handle type="target" position={Position.Left} style={handleStyle} />
       <div
-        className={`${styles.node} ${selected ? styles.selected : ""}`}
+        className={`${styles.node} ${selected ? styles.selected : ""} ${
+          data.highlighted ? styles.highlighted : ""
+        }`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         role="region"
         aria-label={`Node: ${data.label}`}
       >
         <div className={styles.header}>
-          <button
-            className={styles.statusButton}
-            onClick={toggleStatus}
-            title={status === STATUS.COMPLETED ? "Mark as Learning" : "Mark as Completed"}
-            aria-label={status === STATUS.COMPLETED ? "Mark as Learning" : "Mark as Completed"}
-          >
-            {status === STATUS.COMPLETED ? (
-              <FaCheck color="#4ade80" aria-hidden="true" />
-            ) : (
-              <FaBook color="#f472b6" aria-hidden="true" />
-            )}
-          </button>
+          <div className={styles.leftGroup}>
+            <button
+              className={styles.statusButton}
+              onClick={toggleStatus}
+              aria-label={`Mark as ${
+                status === STATUS.COMPLETED ? "Learning" : "Completed"
+              }`}
+            >
+              {status === STATUS.COMPLETED ? (
+                <FaCheck
+                  className={styles.checkIcon}
+                  title="Marked as Learning"
+                />
+              ) : (
+                <FaBook
+                  className={styles.bookIcon}
+                  title="Marked as Completed"
+                />
+              )}
+            </button>
+          </div>
           <div className={styles.controls}>
-            <FaExternalLinkAlt
-              className={`${styles.icon} ${isHovered ? styles.hoverEffect : ""}`}
-              onClick={data.openDrawer}
-              title="Open resources drawer"
-              aria-label="Open resources drawer"
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === "Enter" && data.openDrawer()}
-            />
             {data.shortDesc && (
-              <FaChevronDown
-                className={`${styles.icon} ${isDescriptionVisible ? styles.rotate : ""} ${
-                  isHovered ? styles.hoverEffect : ""
-                }`}
+              <button
+                className={styles.descriptionToggle}
                 onClick={toggleDescription}
-                title={isDescriptionVisible ? "Hide description" : "Show description"}
-                aria-label={isDescriptionVisible ? "Hide description" : "Show description"}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => e.key === "Enter" && toggleDescription()}
-              />
+                aria-label={`${
+                  isDescriptionVisible ? "Hide" : "Show"
+                } description`}
+              >
+                <FaChevronDown
+                  className={`${styles.chevron} ${
+                    isDescriptionVisible ? styles.rotated : ""
+                  }`}
+                  title={`${
+                    isDescriptionVisible ? "Hide" : "Show"
+                  } description`}
+                />
+              </button>
             )}
+            <button
+              className={styles.resourceButton}
+              onClick={data.openDrawer}
+              aria-label="Open resources"
+            >
+              <FaExternalLinkAlt
+                className={styles.resourceIcon}
+                title="Open resources"
+              />
+            </button>
           </div>
         </div>
-        <hr className={styles.separator} aria-hidden="true" />
+        <hr className={styles.separator} />
         <div className={styles.label}>{data.label}</div>
-        <hr className={styles.separator} aria-hidden="true" />
         {data.shortDesc && (
           <div
-            className={`${styles.description} ${isDescriptionVisible ? styles.visible : styles.hidden}`}
             ref={descriptionRef}
+            className={`${styles.description} ${
+              isDescriptionVisible ? styles.visible : ""
+            }`}
             aria-hidden={!isDescriptionVisible}
           >
             <div className={styles.descriptionContent}>{data.shortDesc}</div>
           </div>
         )}
-        {data.onExpand && isHovered && (
-          <button
-            className={styles.expandButton}
-            onClick={() => data.onExpand(data.id)}
-            title="Expand this node"
-            aria-label="Expand this node"
-          >
-            <RiMindMap className={styles.expandIcon} aria-hidden="true" />
-          </button>
-        )}
       </div>
-      <Handle type="source" position={Position.Right} style={getHandleStyle(isHovered)} />
+      <Handle
+        type="source"
+        position={Position.Right}
+        style={handleStyle}
+        onClick={handleExpandCollapse}
+      >
+        <div className={styles.handleIcon}>
+          {data.onCollapse ? (
+            <FaCompressAlt
+              size={25}
+              className={styles.handleIconInner}
+              title="Collapse"
+            />
+          ) : (
+            <FaExpandAlt
+              size={25}
+              className={styles.handleIconInner}
+              title="Expand"
+            />
+          )}
+        </div>
+      </Handle>
     </>
   );
 });

@@ -6,9 +6,22 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { generateBasicMindmap, generateSubtopics, gatherResources } from "../services/aiService.js";
 
+import PDFDocument from 'pdfkit';
+import { Packer, Document, Paragraph, TextRun } from 'docx';
+import fs from 'fs';
+import path from 'path'
+const __dirname = path.resolve();
+
 // Helper function to generate edges between nodes
 const generateEdges = (nodes) => {
-    return nodes
+    // Add ancestor property to each node
+    const nodesWithAncestors = nodes.map(node => ({
+        ...node,
+        ancestors: node.parent ? [...(nodes.find(n => n._id === node.parent)?.ancestor || []), node.parent.toString()] : []
+    }));
+
+    // Generate edges (same logic as before)
+    const newEdges = nodesWithAncestors
         .filter((node) => node.parent)
         .map((node) => ({
             id: `${node.parent}-${node._id}`,
@@ -18,11 +31,20 @@ const generateEdges = (nodes) => {
             type: "smoothstep",
             markerEnd: {
                 type: "arrowclosed",
-                color: "pink",
-                width: 30,
-                height: 30,
+                color: "orange",
+                width: 15,
+                height: 15,
             },
+            style: {
+                stroke: "orange",
+                strokeWidth: 3,
+            }
         }));
+
+    return {
+        nodes: nodesWithAncestors,
+        edges: newEdges
+    };
 };
 
 // Helper function to ensure valid resources field
@@ -108,10 +130,9 @@ export default {
                 throw error;
             }
 
-            const edges = generateEdges(nodeDocs);
             res
                 .status(201)
-                .json(new ApiResponse(201, { mindmap, nodes: nodeDocs, edges }, "Mindmap created"));
+                .json(new ApiResponse(201, { mindmap }, "Mindmap created"));
         } catch (error) {
             console.error("Error creating mindmap:", error);
             throw new ApiError(500, "Failed to create mindmap");
@@ -127,12 +148,14 @@ export default {
             throw new ApiError(404, "Mindmap not found");
         }
 
-        const nodes = await Node.find({ mindmapId });
-        nodes.forEach(ensureValidResources);
-        const edges = generateEdges(nodes);
+        // Fetch nodes using lean query (much faster for read-only ops)
+        const nodes = await Node.find({ mindmapId }).sort({ path: 1 }).lean();
 
-        res.status(200).json(new ApiResponse(200, { mindmap, nodes, edges }, "Mindmap fetched"));
+        const { nodes: updatedNodes, edges } = generateEdges(nodes);
+        // console.log("Updated nodes:", updatedNodes);
+        res.status(200).json(new ApiResponse(200, { mindmap, nodes: updatedNodes, edges }, "Mindmap fetched"));
     }),
+
 
     expandNode: asyncHandler(async (req, res) => {
         const { mindmapId, nodeId } = req.params;
@@ -210,8 +233,8 @@ export default {
                 throw error;
             }
 
-            const edges = generateEdges(nodeDocs);
-            res.status(200).json(new ApiResponse(200, { newNodes: nodeDocs, edges }, "Node expanded"));
+            const { nodes: updatedNodes, edges } = generateEdges(nodeDocs);
+            res.status(200).json(new ApiResponse(200, { newNodes: updatedNodes, edges }, "Node expanded"));
         } catch (error) {
             console.error("Error expanding node:", error);
             throw new ApiError(500, "Failed to expand node");
@@ -240,7 +263,7 @@ export default {
 
         // Check if resources object is effectively empty
         const resourceFields = ['links', 'images', 'videos', 'notes', 'markdown', 'diagrams', 'codeSnippets'];
-        const isResourcesEmpty = !node.resources || 
+        const isResourcesEmpty = !node.resources ||
             Object.keys(node.resources).length === 0 ||
             resourceFields.every(field => {
                 const value = node.resources[field];
@@ -359,5 +382,160 @@ export default {
         await mindmap.save();
 
         res.status(200).json(new ApiResponse(200, { mindmap }, "Mindmap updated"));
+    }),
+
+    downloadResources: asyncHandler(async (req, res) => {
+        const { nodeId } = req.params;
+        const { format } = req.body; // 'pdf' or 'doc'
+        const { user } = req;
+
+        // Validate input
+        if (!nodeId) {
+            throw new ApiError(400, 'Node ID are required');
+        }
+        if (!format) {
+            format = 'pdf'; // Default to PDF if not provided
+        }
+        if (!['pdf', 'doc'].includes(format)) {
+            throw new ApiError(400, 'Invalid format. Use "pdf" or "doc"');
+        }
+// console.log("Download request for node:", nodeId, "Format:", format);
+        // Fetch node and mindmap
+        const node = await Node.findById(nodeId).populate('mindmapId');
+        // console.log("Node fetched:", node);
+        if (!node) {
+            
+            throw new ApiError(404, 'Node not found');
+        }
+
+        const mindmap = node.mindmapId;
+        if (!mindmap || mindmap.owner.toString() !== user.id.toString()) {
+            throw new ApiError(403, 'You do not have permission to access this node');
+        }
+
+        // Extract data
+        const nodeData = {
+            label: node.data.label,
+            shortDesc: node.data.shortDesc || 'No description provided',
+            status: node.status,
+            resources: node.resources || {},
+        };
+
+        const mindmapData = {
+            title: mindmap.title,
+            owner: mindmap.owner, // Assuming owner is a user ID; adjust if populated with user name
+        };
+
+        // Format resources for document
+        const formatResources = (resources) => {
+            let formatted = '';
+
+            if (resources.links?.length > 0) {
+                formatted += 'Links:\n';
+                resources.links.forEach(link => {
+                    formatted += `  - ${link.title || link.url}: ${link.url}\n`;
+                    if (link.description) formatted += `    Description: ${link.description}\n`;
+                });
+            }
+
+            if (resources.images?.length > 0) {
+                formatted += 'Images:\n';
+                resources.images.forEach(image => {
+                    formatted += `  - ${image.alt || 'Image'}: ${image.url}\n`;
+                    if (image.caption) formatted += `    Caption: ${image.caption}\n`;
+                });
+            }
+
+            if (resources.videos?.length > 0) {
+                formatted += 'Videos:\n';
+                resources.videos.forEach(video => {
+                    formatted += `  - ${video.title || video.url}: ${video.url}\n`;
+                    if (video.description) formatted += `    Description: ${video.description}\n`;
+                });
+            }
+
+            if (resources.notes?.length > 0) {
+                formatted += 'Notes:\n';
+                resources.notes.forEach(note => {
+                    formatted += `  - ${note.content}\n`;
+                });
+            }
+
+            if (resources.markdown?.length > 0) {
+                formatted += 'Markdown:\n';
+                resources.markdown.forEach(md => {
+                    formatted += `  - ${md.content}\n`;
+                });
+            }
+
+            if (resources.diagrams?.length > 0) {
+                formatted += 'Diagrams:\n';
+                resources.diagrams.forEach(diagram => {
+                    formatted += `  - Format: ${diagram.format}\n    Content: ${diagram.content}\n`;
+                });
+            }
+
+            if (resources.codeSnippets?.length > 0) {
+                formatted += 'Code Snippets:\n';
+                resources.codeSnippets.forEach(code => {
+                    formatted += `  - Language: ${code.language}\n    Content: ${code.content}\n`;
+                });
+            }
+
+            return formatted || 'No resources available';
+        };
+
+        // Compile document content
+        const documentContent = `
+Mindmap: ${mindmapData.title}
+Owner: ${mindmapData.owner}
+
+Node: ${nodeData.label}
+Description: ${nodeData.shortDesc}
+Status: ${nodeData.status}
+
+Resources:
+${formatResources(nodeData.resources)}
+  `.trim();
+
+        // Generate file based on format
+        const fileName = `node_${nodeId}.${format === 'pdf' ? 'pdf' : 'docx'}`;
+        const filePath = path.join(__dirname, fileName);
+
+        if (format === 'pdf') {
+            const doc = new PDFDocument();
+            const stream = fs.createWriteStream(filePath);
+            doc.pipe(stream);
+            doc.fontSize(12).text(documentContent, { align: 'left' });
+            doc.end();
+
+            stream.on('finish', () => {
+                res.download(filePath, fileName, (err) => {
+                    if (err) {
+                        throw new ApiError(500, 'Failed to send PDF');
+                    }
+                });
+            });
+        } else if (format === 'doc') {
+            const doc = new Document({
+                sections: [{
+                    properties: {},
+                    children: [
+                        new Paragraph({
+                            children: [new TextRun(documentContent)],
+                        }),
+                    ],
+                }],
+            });
+
+            const buffer = await Packer.toBuffer(doc);
+            fs.writeFileSync(filePath, buffer);
+
+            res.download(buffer, fileName, (err) => {
+                if (err) {
+                    throw new ApiError(500, 'Failed to send DOC');
+                }
+            });
+        }
     }),
 };

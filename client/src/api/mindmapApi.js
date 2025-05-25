@@ -40,3 +40,10 @@ export const updateMindmap = async (mindmapId, data) => {
   const response = await axiosInstance.put(`/mindmaps/${mindmapId}`, data);
   return response.data;
 };
+
+export const downloadResources = async (nodeId, format) => {
+  const response = await axiosInstance.post(`/mindmaps/nodes/${nodeId}/download-resources`, { format }, {
+    responseType: 'blob', // Ensure the response is treated as a blob
+  });
+  return response.data;
+}

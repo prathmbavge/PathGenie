@@ -1,7 +1,7 @@
 // src/hooks/useRoadmap/useLayout.js
 import { useCallback, useRef } from "react";
 import debounce from "lodash/debounce";
-import { getLayoutedElements, defaultElkOptions } from "../../../utils/layout";
+import { getLayoutedElements } from "../../../utils/layout";
 
 /**
  * Returns a function `onLayout(direction)` that, when called, 
@@ -12,15 +12,12 @@ import { getLayoutedElements, defaultElkOptions } from "../../../utils/layout";
  */
 export const useLayout = (nodesRef, edgesRef, setNodes, setEdges, setLoading) => {
   const debounced = useRef(
-    debounce(async (direction = "VERTICAL") => {
-      const opts = {
-        ...defaultElkOptions,
-        "elk.direction": direction === "HORIZONTAL" ? "RIGHT" : "DOWN",
-      };
+    debounce(async () => {
+      const opts = { direction: "LR" };
       try {
         setLoading(true);
         const { nodes: layoutedNodes, edges: layoutedEdges } =
-          await getLayoutedElements(nodesRef.current, edgesRef.current, opts);
+           getLayoutedElements(nodesRef.current, edgesRef.current, opts);
         setNodes(layoutedNodes);
         setEdges(layoutedEdges);
       } catch {
@@ -32,8 +29,8 @@ export const useLayout = (nodesRef, edgesRef, setNodes, setEdges, setLoading) =>
   ).current;
 
   return useCallback(
-    (direction) => {
-      debounced(direction);
+    () => {
+      debounced();
     },
     [debounced]
   );

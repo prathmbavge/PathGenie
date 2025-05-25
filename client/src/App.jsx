@@ -1,6 +1,12 @@
 // src/App.jsx
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { useSession } from "./lib/auth-client";
 import Pattern from "./components/Pattern.jsx";
@@ -14,12 +20,10 @@ import LandingPage from "./Pages/LandingPage.jsx";
 import MindMapPage from "./Pages/MindMapPage.jsx";
 import Navbar from "./components/Navbar/Navbar.jsx";
 
-
 // ------------------------
 // Route Guards
 // ------------------------
 
-// Protects private routes: if session is pending, show loader; if no session, redirect to /login.
 function PrivateRoute({ children }) {
   const { data: session, isPending, error } = useSession();
   const location = useLocation();
@@ -62,7 +66,6 @@ function PrivateRoute({ children }) {
   return children;
 }
 
-// Prevents authenticated users from visiting login/register pages.
 function PublicRoute({ children }) {
   const { data: session, isPending } = useSession();
 
@@ -83,10 +86,6 @@ function PublicRoute({ children }) {
   return children;
 }
 
-
-// ------------------------
-// Main App Component
-// ------------------------
 export default function App() {
   const { data: session, isPending } = useSession();
   const location = useLocation();
@@ -100,11 +99,15 @@ export default function App() {
     );
   }
 
-  // Determine which routes should hide the Navbar
-  const publicPaths = ["/login", "/register"];
-  const isPublicPath = publicPaths.includes(location.pathname);
+  // Determine which routes should hide the Navbar:
+  //   • public pages: "/", "/login", "/register"
+  //   • mindmap pages: any path starting with "/mindmap/"
+  const publicPaths = ["/", "/login", "/register"];
+  const isPublicPath =
+    publicPaths.includes(location.pathname) ||
+    location.pathname.startsWith("/mindmap/");
 
-  // Only show Navbar if user is signed in AND not on a public page
+  // Only show Navbar if user is signed in AND not on a “hidden” path
   const shouldShowNavbar = session?.user && !isPublicPath;
 
   return (
@@ -171,7 +174,7 @@ export default function App() {
             style: {
               fontSize: "1.2rem",
               fontFamily: "Times New Roman, serif",
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              backgroundColor: "rgba(255, 255, 255, 0.1)",
               color: "#fff",
               borderRadius: "0",
             },

@@ -11,5 +11,7 @@ router.get('/:mindmapId/nodes/:nodeId/resources', mindmapController.getNodeResou
 router.put('/:mindmapId/nodes/:nodeId', mindmapController.updateNode);
 router.delete('/:mindmapId/nodes/:nodeId', mindmapController.deleteNode);
 router.put('/:mindmapId', mindmapController.updateMindmap);
+router.post('/nodes/:nodeId/download-resources', mindmapController.downloadResources);
+
 
 export default router;

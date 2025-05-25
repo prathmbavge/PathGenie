@@ -1,0 +1,65 @@
+/* FlowComponent.module.css */
+.searchContainer {
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  width: 48px;
+  height: 48px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+.searchContainer:hover,
+.searchContainer:focus-within {
+  width: 280px;
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.25);
+}
+
+.searchIconButton {
+  background: transparent;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  transition: transform 0.2s ease;
+}
+
+.searchIconButton:hover {
+  transform: scale(1.1);
+}
+
+.searchIcon {
+  width: 24px;
+  height: 24px;
+}
+
+.searchInput {
+  background: transparent;
+  border: none;
+  color: #fff;
+  margin-left: 12px;
+  padding: 8px 0;
+  width: 100%;
+  outline: none;
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.searchInput::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 400;
+}
+
+.searchContainer:hover .searchInput,
+.searchContainer:focus-within .searchInput {
+  opacity: 1;
+  transition-delay: 0.1s;
+}

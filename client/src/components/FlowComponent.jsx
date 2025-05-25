@@ -39,8 +39,7 @@ const FlowComponent = ({
         maxZoom={2}
       >
         <MiniMap
-          nodeColor={(node) => node.color || "#ff0072"}
-          nodeStrokeWidth={3}
+          nodeColor="red"
           style={{ backgroundColor: "transparent" }}
           zoomable
           pannable

@@ -7,9 +7,17 @@ import ApiResponse from "../utils/ApiResponse.js";
 import { generateBasicMindmap, generateSubtopics, gatherResources } from "../services/aiService.js";
 
 import PDFDocument from 'pdfkit';
-import { Packer, Document, Paragraph, TextRun } from 'docx';
+import { Document, Paragraph, TextRun, Packer, ImageRun, HeadingLevel } from 'docx';
+import { marked } from 'marked';
+import axios from 'axios';
 import fs from 'fs';
 import path from 'path'
+import { MarkdownRenderer } from 'pdfkit-markdown';
+import remarkParse from 'remark-parse';
+import { unified } from 'unified';
+import MarkdownIt from 'markdown-it';
+import HTMLtoDocx from 'html-to-docx';
+import downloadResources from "../services/downloadResources.js";
 const __dirname = path.resolve();
 
 // Helper function to generate edges between nodes
@@ -45,6 +53,14 @@ const generateEdges = (nodes) => {
         nodes: nodesWithAncestors,
         edges: newEdges
     };
+};
+
+// **Helper Function: Download Image**
+const downloadImage = async (url) => {
+    const response = await axios.get(url, { responseType: 'arraybuffer' });
+    const imagePath = path.join(__dirname, 'temp_image.png');
+    fs.writeFileSync(imagePath, response.data);
+    return imagePath;
 };
 
 // Helper function to ensure valid resources field
@@ -384,158 +400,5 @@ export default {
         res.status(200).json(new ApiResponse(200, { mindmap }, "Mindmap updated"));
     }),
 
-    downloadResources: asyncHandler(async (req, res) => {
-        const { nodeId } = req.params;
-        const { format } = req.body; // 'pdf' or 'doc'
-        const { user } = req;
-
-        // Validate input
-        if (!nodeId) {
-            throw new ApiError(400, 'Node ID are required');
-        }
-        if (!format) {
-            format = 'pdf'; // Default to PDF if not provided
-        }
-        if (!['pdf', 'doc'].includes(format)) {
-            throw new ApiError(400, 'Invalid format. Use "pdf" or "doc"');
-        }
-// console.log("Download request for node:", nodeId, "Format:", format);
-        // Fetch node and mindmap
-        const node = await Node.findById(nodeId).populate('mindmapId');
-        // console.log("Node fetched:", node);
-        if (!node) {
-            
-            throw new ApiError(404, 'Node not found');
-        }
-
-        const mindmap = node.mindmapId;
-        if (!mindmap || mindmap.owner.toString() !== user.id.toString()) {
-            throw new ApiError(403, 'You do not have permission to access this node');
-        }
-
-        // Extract data
-        const nodeData = {
-            label: node.data.label,
-            shortDesc: node.data.shortDesc || 'No description provided',
-            status: node.status,
-            resources: node.resources || {},
-        };
-
-        const mindmapData = {
-            title: mindmap.title,
-            owner: mindmap.owner, // Assuming owner is a user ID; adjust if populated with user name
-        };
-
-        // Format resources for document
-        const formatResources = (resources) => {
-            let formatted = '';
-
-            if (resources.links?.length > 0) {
-                formatted += 'Links:\n';
-                resources.links.forEach(link => {
-                    formatted += `  - ${link.title || link.url}: ${link.url}\n`;
-                    if (link.description) formatted += `    Description: ${link.description}\n`;
-                });
-            }
-
-            if (resources.images?.length > 0) {
-                formatted += 'Images:\n';
-                resources.images.forEach(image => {
-                    formatted += `  - ${image.alt || 'Image'}: ${image.url}\n`;
-                    if (image.caption) formatted += `    Caption: ${image.caption}\n`;
-                });
-            }
-
-            if (resources.videos?.length > 0) {
-                formatted += 'Videos:\n';
-                resources.videos.forEach(video => {
-                    formatted += `  - ${video.title || video.url}: ${video.url}\n`;
-                    if (video.description) formatted += `    Description: ${video.description}\n`;
-                });
-            }
-
-            if (resources.notes?.length > 0) {
-                formatted += 'Notes:\n';
-                resources.notes.forEach(note => {
-                    formatted += `  - ${note.content}\n`;
-                });
-            }
-
-            if (resources.markdown?.length > 0) {
-                formatted += 'Markdown:\n';
-                resources.markdown.forEach(md => {
-                    formatted += `  - ${md.content}\n`;
-                });
-            }
-
-            if (resources.diagrams?.length > 0) {
-                formatted += 'Diagrams:\n';
-                resources.diagrams.forEach(diagram => {
-                    formatted += `  - Format: ${diagram.format}\n    Content: ${diagram.content}\n`;
-                });
-            }
-
-            if (resources.codeSnippets?.length > 0) {
-                formatted += 'Code Snippets:\n';
-                resources.codeSnippets.forEach(code => {
-                    formatted += `  - Language: ${code.language}\n    Content: ${code.content}\n`;
-                });
-            }
-
-            return formatted || 'No resources available';
-        };
-
-        // Compile document content
-        const documentContent = `
-Mindmap: ${mindmapData.title}
-Owner: ${mindmapData.owner}
-
-Node: ${nodeData.label}
-Description: ${nodeData.shortDesc}
-Status: ${nodeData.status}
-
-Resources:
-${formatResources(nodeData.resources)}
-  `.trim();
-
-        // Generate file based on format
-        const fileName = `node_${nodeId}.${format === 'pdf' ? 'pdf' : 'docx'}`;
-        const filePath = path.join(__dirname, fileName);
-
-        if (format === 'pdf') {
-            const doc = new PDFDocument();
-            const stream = fs.createWriteStream(filePath);
-            doc.pipe(stream);
-            doc.fontSize(12).text(documentContent, { align: 'left' });
-            doc.end();
-
-            stream.on('finish', () => {
-                res.download(filePath, fileName, (err) => {
-                    if (err) {
-                        throw new ApiError(500, 'Failed to send PDF');
-                    }
-                });
-            });
-        } else if (format === 'doc') {
-            const doc = new Document({
-                sections: [{
-                    properties: {},
-                    children: [
-                        new Paragraph({
-                            children: [new TextRun(documentContent)],
-                        }),
-                    ],
-                }],
-            });
-
-            const buffer = await Packer.toBuffer(doc);
-            fs.writeFileSync(filePath, buffer);
-
-            res.download(buffer, fileName, (err) => {
-                if (err) {
-                    throw new ApiError(500, 'Failed to send DOC');
-                }
-            });
-        }
-    }),
+    downloadResources: downloadResources,
 };

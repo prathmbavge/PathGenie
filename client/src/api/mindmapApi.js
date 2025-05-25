@@ -41,9 +41,14 @@ export const updateMindmap = async (mindmapId, data) => {
   return response.data;
 };
 
-export const downloadResources = async (nodeId, format) => {
-  const response = await axiosInstance.post(`/mindmaps/nodes/${nodeId}/download-resources`, { format }, {
-    responseType: 'blob', // Ensure the response is treated as a blob
-  });
-  return response.data;
-}
+export const downloadResources = async (nodeId, format, signal) => {
+  const response = await axiosInstance.post(
+    `/mindmaps/nodes/${nodeId}/download-resources`,
+    { format },
+    {
+      responseType: 'blob', // Ensure the response is treated as a blob
+      signal, // Pass the AbortController signal for request cancellation
+    }
+  );
+  return response; // Return the full response to access headers
+};

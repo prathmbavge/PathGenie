@@ -9,6 +9,7 @@ export const defaultDagreOptions = {
   ranksep: 200, // Increased separation between layers
   marginx: 50,  // Margin on x-axis
   marginy: 50,  // Margin on y-axis
+  controlPoints: true
 };
 
 /**
@@ -100,7 +101,7 @@ export const getLayoutedElements = (nodes, edges, options = {}) => {
           ...node.style,
           width: nodeWithPosition.width,
           height: nodeWithPosition.height,
-          padding: "10px",
+          padding: "5px",
         };
       }
 

@@ -1,11 +1,11 @@
 {
   "name": "pathgenie",
-  "version": "1.0.0",
+  "version": "1.5.0",
   "description": "Path Genie is an interactive web application that helps users create personalized learning paths based on a topic of interest. By entering a title (e.g., \"Learn Python Programming\"), users can generate a detailed, visual learning path using the **React Flow** library. The application leverages the **Sonar API by Perplexity** to fetch relevant learning resources, including YouTube videos, blogs, articles, and more, to enrich the learning experience.",
   "homepage": "https://github.com/prathmbavge/PathGenie#readme",
   "scripts": {
     "install:all": "npm install && cd client && npm install && cd ../server && npm install",
-    "build:client": "cd client && npm i react-copy-to-clipboard --force && npm run build",
+    "build:client": "cd client && npm run build",
     "start:server": "cd server && node index.js",
     "build": "npm run build:client",
     "start": "npm run start:server",
@@ -19,7 +19,7 @@
     "url": "git+https://github.com/prathmbavge/PathGenie.git"
   },
   "license": "ISC",
-  "author": "",
-  "type": "commonjs",
+  "author": "Pratham and Team",
+  "type": "module",
   "main": "index.js"
 }

@@ -29,7 +29,7 @@ import ReactPlayer from "react-player/lazy";
 import { Transformer } from "markmap-lib";
 import { Markmap } from "markmap-view";
 import { RiMindMap } from "react-icons/ri";
-import { CopyToClipboard } from "react-copy-to-clipboard";
+import { showSuccessToast } from "../../utils/toastUtils.js";
 
 const MarkmapViewer = ({ markdown }) => {
   const svgRef = useRef(null);
@@ -69,6 +69,11 @@ const DrawerContent = memo(({ content, onClose, setLoading, nodeId }) => {
   const handleDownload = useCallback(() => {
     downloadResources(nodeId, downloadFormat);
   }, [downloadFormat, downloadResources, nodeId]);
+
+  const handleCopy = (content) => {
+    navigator.clipboard.writeText(content);
+    showSuccessToast("Code copied to clipboard!");
+  };
 
   return (
     <>
@@ -172,14 +177,8 @@ const DrawerContent = memo(({ content, onClose, setLoading, nodeId }) => {
                                 >
                                   {String(children).replace(/\n$/, "")}
                                 </SyntaxHighlighter>
-                                {/* <CopyToClipboard
-                                  text={children.toString().replace(/\n$/, "")}
-                                  size={50}
-                                    className="absolute top-4 right-2 px-2 py-1 text-neon-blue hover:transform hover:scale-110  transition-all"
-                                  color="white"
-                                >
-                                  <RxClipboardCopy className=" text-neon-blue hover:transform hover:scale-110  transition-all" />
-                                </CopyToClipboard> */}
+                                {/* <RxClipboardCopy onClick={() => handleCopy(codeSnippet.content)}
+                        size={50} color="white" className="absolute top-4 right-2 px-2 py-1 text-neon-blue hover:transform hover:scale-110  transition-all" /> */}
                               </>
                             ) : (
                               <code className={className} {...props}>
@@ -265,13 +264,13 @@ const DrawerContent = memo(({ content, onClose, setLoading, nodeId }) => {
                       >
                         {codeSnippet.content}
                       </SyntaxHighlighter>
-                      <CopyToClipboard
-                        text={codeSnippet.content}
-                        size={50}
+
+                      <RxClipboardCopy
+                        onClick={() => handleCopy(codeSnippet.content)}
+                        size={40}
                         color="white"
-                      >
-                        <RxClipboardCopy className="absolute top-4 right-2 px-2 py-1 text-neon-blue hover:transform hover:scale-110  transition-all" />
-                      </CopyToClipboard>
+                        className="absolute top-4 right-2 px-2 py-1 text-neon-blue hover:transform hover:scale-110  transition-all"
+                      />
                     </motion.div>
                   ))}
                 </div>
@@ -471,13 +470,12 @@ const DrawerContent = memo(({ content, onClose, setLoading, nodeId }) => {
                     >
                       {codeSnippet.content}
                     </SyntaxHighlighter>
-                    <CopyToClipboard
-                      text={codeSnippet.content}
-                      size={50}
+                    <RxClipboardCopy
+                      onClick={() => handleCopy(codeSnippet.content)}
+                      size={40}
                       color="white"
-                    >
-                      <RxClipboardCopy className="absolute top-12 right-2 px-2 py-1 text-neon-blue hover:transform hover:scale-110  transition-all" />
-                    </CopyToClipboard>
+                      className="absolute top-4 right-2 px-2 py-1 text-neon-blue hover:transform hover:scale-110  transition-all"
+                    />
                   </div>
                 ))}
               </div>

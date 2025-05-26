@@ -52,3 +52,8 @@ export const downloadResources = async (nodeId, format, signal) => {
   );
   return response; // Return the full response to access headers
 };
+
+export const deleteMindmap = async (mindmapId) => {
+  const response = await axiosInstance.delete(`/mindmaps/${mindmapId}`);
+  return response.data;
+};

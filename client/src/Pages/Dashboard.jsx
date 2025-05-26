@@ -1,82 +1,130 @@
-// src/pages/Dashboard.jsx
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import GradientInput from "../components/Input/GradientInput";
+import MagicIcon from "../components/Icons/MagicIcon";
+import MindmapCard from "../components/MindmapCard";
 import SlideButton from "../components/Buttons/SlideButton";
-import GlowCard from "../components/Cards/GlowCard";
+
 import { requestHandler } from "../../utils/index";
 import { showSuccessToast } from "../../utils/toastUtils";
-import { createMindmap, getAllMindmaps } from "../api/mindmapApi";
-
-const MagicIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="1rem"
-    height="1rem"
-    fill="currentColor"
-    viewBox="0 0 16 16"
-    aria-hidden="true"
-    focusable="false"
-  >
-    <path d="M9.5 2.672a.5.5 0 1 0 1 0V.843a.5.5 0 0 0-1 0zm4.5.035A.5.5 0 0 0 13.293 2L12 3.293a.5.5 0 1 0 .707.707zM7.293 4A.5.5 0 1 0 8 3.293L6.707 2A.5.5 0 0 0 6 2.707zm-.621 2.5a.5.5 0 1 0 0-1H4.843a.5.5 0 1 0 0 1zm8.485 0a.5.5 0 1 0 0-1h-1.829a.5.5 0 0 0 0 1zM13.293 10A.5.5 0 1 0 14 9.293L12.707 8a.5.5 0 1 0-.707.707zM9.5 11.157a.5.5 0 0 0 1 0V9.328a.5.5 0 0 0-1 0zm1.854-5.097a.5.5 0 0 0 0-.706l-.708-.708a.5.5 0 0 0-.707 0L8.646 5.94a.5.5 0 0 0 0 .707l.708.708a.5.5 0 0 0 .707 0l1.293-1.293Zm-3 3a.5.5 0 0 0 0-.706l-.708-.708a.5.5 0 0 0-.707 0L.646 13.94a.5.5 0 0 0 0 .707l.708.708a.5.5 0 0 0 .707 0z" />
-  </svg>
-);
+import {
+  createMindmap,
+  getAllMindmaps,
+  updateMindmap,
+  deleteMindmap,
+} from "../api/mindmapApi";
 
 const Dashboard = () => {
-  const [title, setTitle] = useState("");
   const [loading, setLoading] = useState(false);
   const [mindmaps, setMindmaps] = useState([]);
+  const [title, setTitle] = useState("");
   const navigate = useNavigate();
 
-  const handleCreateMindmap = async () => {
+  // Create a new mindmap
+  const handleCreateMindmap = useCallback(async () => {
     if (!title.trim()) {
       alert("Please enter a title.");
       return;
     }
-
     setLoading(true);
-    await requestHandler(
-      () => createMindmap(title.trim()),
-      setLoading,
-      (res) => {
-        const mindmapId = res.data.mindmap._id;
-        showSuccessToast("Mindmap created successfully");
-        navigate(`/mindmap/${mindmapId}`);
-      },
-      (error) => {
-        console.error("Error creating mindmap:", error);
-        alert("Failed to create mindmap.");
-      }
-    );
-  };
 
+    try {
+      await requestHandler(
+        async () => createMindmap(title.trim()),
+        setLoading,
+        (res) => {
+          const newMindmap = res.data.mindmap;
+          setMindmaps((prev) => [...prev, newMindmap]);
+          showSuccessToast(res.message || "Mindmap created successfully");
+          navigate(`/mindmap/${newMindmap._id}`, {
+            state: { mindmap: newMindmap },
+          });
+        }
+      );
+    } catch (error) {
+      console.error("Error creating mindmap:", error);
+      alert("Failed to create mindmap.");
+    } finally {
+      setLoading(false);
+    }
+  }, [navigate, title]);
+
+  // Fetch all mindmaps on mount
   useEffect(() => {
     const fetchMindmaps = async () => {
       setLoading(true);
-      await requestHandler(
-        () => getAllMindmaps(),
-        setLoading,
-        (res) => {
-          setMindmaps(res.data.mindmaps || []);
-          showSuccessToast("Fetched mindmaps successfully");
-        },
-        (error) => {
-          console.error("Error fetching mindmaps:", error);
-          alert("Failed to fetch mindmaps.");
-        }
-      );
+
+      try {
+        await requestHandler(
+          async () => getAllMindmaps(),
+          setLoading,
+          (res) => {
+            const fetchedMindmaps = res.data.mindmaps;
+            // console.log("Fetched mindmaps:", fetchedMindmaps);
+            setMindmaps(fetchedMindmaps);
+            showSuccessToast(res.message || "Mindmaps fetched successfully");
+          }
+        );
+      } catch (error) {
+        console.error("Error fetching mindmaps:", error);
+        alert("Failed to fetch mindmaps.");
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchMindmaps();
   }, []);
 
+  // Update a mindmap (e.g., visibility toggle)
+  const handleUpdateMindmap = useCallback(async (mindmapId, updates) => {
+    setLoading(true);
+    try {
+      await requestHandler(
+        async () => updateMindmap(mindmapId, updates),
+        setLoading,
+        (res) => {
+          const updatedMindmap = res.data.mindmap;
+          setMindmaps((prev) =>
+            prev.map((m) => (m._id === updatedMindmap._id ? updatedMindmap : m))
+          );
+          showSuccessToast(res.message || "Mindmap updated !");
+        }
+      );
+    } catch (error) {
+      console.error("Error updating mindmap:", error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const handleDeleteMindmap = useCallback(async (mindmapId) => {
+  setLoading(true);
+  try {
+    await requestHandler(
+      async () => deleteMindmap(mindmapId),
+      setLoading,
+      (res) => {
+        setMindmaps((prev) => prev.filter((m) => m._id !== mindmapId));
+        showSuccessToast(res.message || "Mindmap deleted successfully.");
+      }
+    );
+  } catch (error) {
+    console.error("Error deleting mindmap:", error);
+    alert("Failed to delete mindmap.");
+  } finally {
+    setLoading(false);
+  }
+}, []);
+
+
   return (
-    // 1. This wrapper takes full viewport height and keeps the background fixed below it.
-    //    PageLayout (or your global CSS) should have `background-attachment: fixed` on body or a wrapper.
     <div className="h-screen flex flex-col">
-      {/* 2. This inner wrapper is scrollable when content overflows vertically. */}
+      {/* Scrollable content area */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8">
-        {/* Input + Button Container */}
+        {/* Input + Button */}
         <div className="max-w-xl mx-auto flex flex-col items-center text-center pt-8">
           <div className="w-full">
             <GradientInput
@@ -96,7 +144,7 @@ const Dashboard = () => {
               text={loading ? "Creating..." : "Do Magic"}
               onClick={handleCreateMindmap}
               disabled={loading}
-              fullWidth={true}
+              fullWidth
               icon={<MagicIcon />}
               className="w-full"
             />
@@ -114,45 +162,13 @@ const Dashboard = () => {
           {mindmaps.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {mindmaps.map((mindmap) => (
-                <GlowCard
+                <MindmapCard
                   key={mindmap._id}
-                  width="100%"
-                  maxWidth="340px"
-                  height="auto"
-                  padding="24px"
-                  className="mx-auto"
-                >
-                  <div
-                    className="flex flex-col items-center justify-center cursor-pointer"
-                    onClick={() => navigate(`/mindmap/${mindmap._id}`)}
-                  >
-                    <h2 className="text-2xl font-bold text-white text-center">
-                      {mindmap.title}
-                    </h2>
-                    <p className="text-gray-400 mt-2">
-                      {new Date(mindmap.createdAt).toLocaleDateString(
-                        undefined,
-                        {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        }
-                      )}
-                    </p>
-                    <p className="text-gray-400 mt-1">
-                      {mindmap.nodeCount} node
-                      {mindmap.nodeCount === 1 ? "" : "s"}
-                    </p>
-                    {mindmap.tags && (
-                      <p className="text-gray-400 mt-1 break-words text-center">
-                        {mindmap.tags.join(", ")}
-                      </p>
-                    )}
-                    <p className="text-gray-400 mt-1 capitalize">
-                      {mindmap.visibility}
-                    </p>
-                  </div>
-                </GlowCard>
+                  mindmap={mindmap}
+                  onToggleVisibility={handleUpdateMindmap}
+                  onDelete={handleDeleteMindmap}
+
+                />
               ))}
             </div>
           ) : (

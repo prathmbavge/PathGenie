@@ -13,4 +13,18 @@ const mindmapSchema = new mongoose.Schema({
 });
 const Mindmap = mongoose.model('Mindmap', mindmapSchema);
 
+/**ON DELETE HOOKS
+ * When a MINDMAP is deleted, all their NOES should also be deleted.
+ */
+mindmapSchema.pre('remove', async function (next) {
+  try {
+    // Assuming Node is another model that has a reference to Mindmap
+    const Node = mongoose.model('Node');
+    await Node.deleteMany({ mindmapId: this._id });
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default Mindmap ;

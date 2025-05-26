@@ -18,7 +18,7 @@ const fetchPerplexityData = async (type, input, mainTopic, userProfile = {}) => 
 You are an AI assistant **with web search capabilities**, tasked with creating a personalized learning mindmap/roadmap for a **${profession}** with **${experienceYears} years of experience**. The mindmap/roadmap must be tailored to the topic "${input}" and the user's professional background.
 
 **Output Requirements:**
-- Generate a hierarchical mindmap as a **strict matching JSON tree** with **exactly 10 nodes**, including multiple levels.
+- Generate a hierarchical mindmap as a **strict matching JSON tree** with **exactly 6 nodes and more 2 sub nodes for each**, including multiple levels.
 - The response must be a **valid JSON object** with a single key "nodes", containing an array of node objects.
 - Each node object must have:
   - "data": { "label": "string", "shortDesc": "string" }
@@ -43,7 +43,8 @@ You are an AI assistant **with web search capabilities**, tasked with creating a
   "nodes": [
     {"data": {"label": "Root Topic", "shortDesc": "Overview of the topic"}, "parentIndex": null},
     {"data": {"label": "Child 1", "shortDesc": "Basic concept"}, "parentIndex": 0}
-  ]
+  ],
+  "tags": [" tags related to the topic seperated by commas (4 to 7 tags)"]
 }
 **Final Instruction:** Your entire response must be the **JSON object only**. No greetings or additional text.
 `;
@@ -90,7 +91,7 @@ You are an Personalize AI assistant with web search capabilities, tasked with pr
 **Output Requirements:**
 
 - Provide a JSON object with a "resources" key containing:
-  - "links": An array of objects, each with "url", "title", and "description". Include educational websites, official documentation, reputable blogs, and **project repositories** (e.g., GitHub links).
+  - "links": An array of objects, each with "url", "title", and "description". Include educational websites, official documentation, reputable blogs, and **project repositories** (e.g., GitHub links), blogs, and other educational resources.
   - "images": An array of objects, each with "url", "alt", and "caption". URLs must be direct links to images.
   - "videos": An array of objects, each with "url", "title", and "description". Prefer YouTube videos or other educational video platforms.
   - "notes": An array of objects, each with "content". Notes should be concise summaries or key points.

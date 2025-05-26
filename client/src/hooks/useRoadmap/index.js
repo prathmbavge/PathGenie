@@ -346,7 +346,7 @@ export const useRoadmap = (mindmapId, openDrawer) => {
             if (addedNode) {
                 reactFlowInstance.fitView({ nodes: [{ id: addedNode.item.id }], duration: 500, maxZoom: 0.5 });
             } else if (selectedNode) {
-                reactFlowInstance.fitView({ nodes: [{ id: selectedNode.id }], duration: 500, maxZoom: 0.5 });
+                reactFlowInstance.fitView({ nodes: [{ id: selectedNode.id }], duration: 500, maxZoom: 0.8 });
             }
         },
         [setNodes, reactFlowInstance]

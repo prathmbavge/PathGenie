@@ -69,6 +69,9 @@ export default {
         })
             .populate("rootNode")
             .sort({ createdAt: -1 });
+        if (!mindmaps || mindmaps.length === 0) {
+            throw new ApiError(404, "No mindmaps found");
+        }
         res.status(200).json(new ApiResponse(200, { mindmaps }, "Mindmaps fetched successfully"));
     }),
 
@@ -81,7 +84,7 @@ export default {
 
         try {
             const userProfile = { profession: user.profession || 'unknown', experienceYears: user.experienceYears || 0 };
-            const { nodes: aiNodes } = await generateBasicMindmap(title, userProfile);
+            const { nodes: aiNodes, tags : aiTags } = await generateBasicMindmap(title, userProfile);
             if (!aiNodes || aiNodes.length === 0) {
                 throw new ApiError(500, "Failed to generate mindmap structure");
             }
@@ -114,6 +117,7 @@ export default {
                 title,
                 rootNode: nodeDocs[0]._id,
                 nodeCount: nodeDocs.length,
+                tags: aiTags || [],
             });
 
             const session = await mongoose.startSession();
@@ -145,10 +149,10 @@ export default {
         const { mindmapId } = req.params;
         const { user } = req;
 
-        const mindmap = await Mindmap.findById(mindmapId).populate("rootNode");
-        if (!mindmap || mindmap.owner.toString() !== user.id.toString()) {
-            throw new ApiError(404, "Mindmap not found");
-        }
+        // const mindmap = await Mindmap.findById(mindmapId).populate("rootNode");
+        // if (!mindmap || mindmap.owner.toString() !== user.id.toString()) {
+        //     throw new ApiError(401, "Unauthorized for Mindmap!");
+        // }
 
         // Fetch nodes using lean query (much faster for read-only ops)
         const nodes = await Node.find({ mindmapId }).sort({ path: 1 }).lean();
@@ -167,7 +171,7 @@ export default {
 
         const mindmap = await Mindmap.findById(mindmapId);
         if (!mindmap || mindmap.owner.toString() !== user.id.toString()) {
-            throw new ApiError(404, "Mindmap not found");
+            throw new ApiError(401, "Unauthorized for Mindmap!");
         }
 
         const parentNode = await Node.findById(nodeId);
@@ -250,9 +254,7 @@ export default {
         if (!mindmapId || !nodeId) throw new ApiError(400, "Mindmap ID and Node ID are required");
 
         const mindmap = await Mindmap.findById(mindmapId);
-        if (!mindmap || mindmap.owner.toString() !== user.id.toString()) {
-            throw new ApiError(404, "Mindmap not found");
-        }
+        
 
         const node = await Node.findById(nodeId);
         if (!node || node.mindmapId.toString() !== mindmapId) {
@@ -275,9 +277,13 @@ export default {
         if (!isResourcesEmpty) {
             return res.status(200).json(new ApiResponse(200, { resources: node.resources }, "Resources fetched"));
         }
+        if (!mindmap || mindmap.owner.toString() !== user.id.toString()) {
+            throw new ApiError(401, "Unauthorized for Resources Generation!");
+        }
 
         try {
             const userProfile = { profession: user.profession || 'unknown', experienceYears: user.experienceYears || 0 };
+            
             const { resources } = await gatherResources(node.data.label + '-' + node.data.shortDesc, mindmap.title, userProfile);
             node.resources = resources;
             await node.save();
@@ -297,7 +303,7 @@ export default {
 
         const mindmap = await Mindmap.findById(mindmapId);
         if (!mindmap || mindmap.owner.toString() !== user.id.toString()) {
-            throw new ApiError(404, "Mindmap not found");
+            throw new ApiError(401, "Unauthorized for Mindmap updatation!");
         }
 
         const node = await Node.findById(nodeId);
@@ -323,47 +329,6 @@ export default {
         res.status(200).json(new ApiResponse(200, { node }, "Node updated"));
     }),
 
-    deleteNode: asyncHandler(async (req, res) => {
-        const { mindmapId, nodeId } = req.params;
-        const { user } = req;
-
-        if (!mindmapId || !nodeId) throw new ApiError(400, "Mindmap ID and Node ID are required");
-
-        const mindmap = await Mindmap.findById(mindmapId);
-        if (!mindmap || mindmap.owner.toString() !== user.id.toString()) {
-            throw new ApiError(404, "Mindmap not found");
-        }
-
-        const node = await Node.findById(nodeId);
-        if (!node || node.mindmapId.toString() !== mindmapId) {
-            throw new ApiError(404, "Node not found");
-        }
-
-        const parentId = node.parent ? node.parent.toString() : null;
-
-        await node.deleteOne();
-
-        if (parentId) {
-            const siblingCount = await Node.countDocuments({
-                mindmapId: mindmapId,
-                parent: parentId,
-            });
-            if (siblingCount === 0) {
-                const parentNode = await Node.findById(parentId);
-                if (parentNode) {
-                    ensureValidResources(parentNode);
-                    parentNode.isLeafNode = true;
-                    await parentNode.save();
-                }
-            }
-        }
-
-        mindmap.nodeCount -= 1;
-        await mindmap.save();
-
-        res.status(200).json(new ApiResponse(200, {}, "Node deleted"));
-    }),
-
     updateMindmap: asyncHandler(async (req, res) => {
         const { mindmapId } = req.params;
         const { title, tags, visibility } = req.body;
@@ -373,7 +338,7 @@ export default {
 
         const mindmap = await Mindmap.findById(mindmapId);
         if (!mindmap || mindmap.owner.toString() !== user.id.toString()) {
-            throw new ApiError(404, "Mindmap not found");
+            throw new ApiError(401, "Unauthorized for Updating Mindmap!");
         }
 
         if (title) mindmap.title = title;
@@ -383,7 +348,23 @@ export default {
         mindmap.updatedAt = Date.now();
         await mindmap.save();
 
-        res.status(200).json(new ApiResponse(200, { mindmap }, "Mindmap updated"));
+        res.status(200).json(new ApiResponse(200, { mindmap }, "visibility Changed!"));
+    }),
+
+    deleteMindmap: asyncHandler(async (req, res) => {
+        const { mindmapId } = req.params;
+        const { user } = req;
+
+        if (!mindmapId) throw new ApiError(400, "Mindmap ID is required");
+
+        const mindmap = await Mindmap.findById(mindmapId);
+        if (!mindmap || mindmap.owner.toString() !== user.id.toString()) {
+            throw new ApiError(401, "Unauthorized for Deleting Mindmap!");
+        }
+
+        await mindmap.deleteOne();
+
+        res.status(200).json(new ApiResponse(200, {}, "Mindmap deleted"));
     }),
 
     downloadResources: downloadResources,

@@ -281,11 +281,12 @@ export const useFetchMindmap = (
   );
 
   useEffect(() => {
+    // console.log("useFetchMindmap effect triggered for mindmapId:", mindmapId);
     fetchMindmap();
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
     };
-  }, [fetchMindmap]);
+  }, []);
 };

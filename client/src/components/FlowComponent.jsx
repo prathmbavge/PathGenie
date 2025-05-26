@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { ReactFlow, MiniMap, Controls, Panel } from "@xyflow/react";
+import { ReactFlow, MiniMap, Controls, Panel, Background } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import CustomNode from "./CustomNode";
 import styles from "./FlowComponent.module.css";
@@ -68,6 +68,7 @@ const FlowComponent = React.memo(
               />
             </div>
           </Panel>
+          <Background />
         </ReactFlow>
       </div>
     );

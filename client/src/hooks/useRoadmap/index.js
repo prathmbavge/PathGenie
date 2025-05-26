@@ -261,7 +261,7 @@ export const useRoadmap = (mindmapId, openDrawer) => {
                     });
                     // Focus on the first visible child or the expanded node
                     const focusNodeId = visibleChildNodes.length > 0 ? visibleChildNodes[0].id : nodeId;
-                    reactFlowInstance.fitView({ nodes: [{ id: focusNodeId }], duration: 500, maxZoom: 0.6 });
+                    reactFlowInstance.fitView({ nodes: [{ id: focusNodeId }], duration: 500, maxZoom: 0.7 });
                 } else {
                     newSet.add(nodeId); // Collapse the node
                     // Focus on the collapsed node
@@ -372,8 +372,6 @@ export const useRoadmap = (mindmapId, openDrawer) => {
             edges: visibleEdges,
             onNodesChange,
             onEdgesChange,
-            setNodes,
-            setEdges,
             onLayout,
             loading,
             focusNode,

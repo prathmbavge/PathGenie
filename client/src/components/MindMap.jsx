@@ -68,6 +68,7 @@ import debounce from "lodash/debounce";
 
 const RoadmapWrapper = React.memo(
   ({ mindmapId, openDrawer, setLoading, searchQuery, onSearch }) => {
+    // console.log("Rendering RoadmapWrapper with mindmapId rbr:", mindmapId);
     const { nodes, edges, focusNode, onEdgesChange, onNodesChange } = useRoadmap(mindmapId, openDrawer);
 
     // Compute highlighted nodes based on search query

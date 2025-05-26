@@ -17,7 +17,7 @@ export const useLayout = (nodesRef, edgesRef, setNodes, setEdges, setLoading) =>
       try {
         setLoading(true);
         const { nodes: layoutedNodes, edges: layoutedEdges } =
-           getLayoutedElements(nodesRef.current, edgesRef.current, opts);
+          getLayoutedElements(nodesRef.current, edgesRef.current, opts);
         setNodes(layoutedNodes);
         setEdges(layoutedEdges);
       } catch {

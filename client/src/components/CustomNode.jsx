@@ -5,7 +5,7 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import { Handle, Position } from "@xyflow/react";
+import { Handle, Position, NodeResizeControl  } from "@xyflow/react";
 import {
   FaChevronDown,
   FaCheck,

@@ -5,7 +5,7 @@
   "homepage": "https://github.com/prathmbavge/PathGenie#readme",
   "scripts": {
     "install:all": "npm install && cd client && npm install && cd ../server && npm install",
-    "build:client": "cd client && npm run build",
+    "build:client": "cd client && npm i react-copy-to-clipboard --force && npm run build",
     "start:server": "cd server && node index.js",
     "build": "npm run build:client",
     "start": "npm run start:server",

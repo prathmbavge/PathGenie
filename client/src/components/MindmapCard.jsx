@@ -7,7 +7,6 @@ import { showErrorToast } from "../../utils/toastUtils";
 const MindmapCard = ({ mindmap, onToggleVisibility, onDelete }) => {
   const navigate = useNavigate();
   const [toggling, setToggling] = useState(false);
-  const [hovered, setHovered] = useState(false);
 
   const handleSwitchChange = useCallback(
     async (e) => {
@@ -49,19 +48,16 @@ const MindmapCard = ({ mindmap, onToggleVisibility, onDelete }) => {
       height="auto"
       padding="24px"
       className="mx-auto flex items-center justify-center relative group"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
     >
       {/* Delete Icon */}
-      
-        <button
-          className="absolute top-2 right-2 text-red-500 hover:text-red-700 transition-colors cursor-pointer"
-          onClick={handleDeleteClick}
-          title="Delete Mindmap"
-        >
-          <MdDelete size={22} />
-        </button>
-      
+
+      <button
+        className="absolute top-2 right-2 text-red-500 hover:text-red-700 transition-colors cursor-pointer"
+        onClick={handleDeleteClick}
+        title="Delete Mindmap"
+      >
+        <MdDelete size={22} />
+      </button>
 
       <div className="flex flex-col items-center justify-center text-center">
         <div

@@ -36,6 +36,8 @@
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
     "markdown-it": "^14.1.0",
+    "markmap-lib": "^0.18.11",
+    "markmap-view": "^0.18.10",
     "mongodb": "^6.16.0",
     "mongoose": "^8.4.3",
     "mongoose-mpath": "^3.0.2",
@@ -43,7 +45,9 @@
     "nodemailer": "^6.9.14",
     "pdfkit": "^0.15.2",
     "pdfkit-markdown": "^0.2.0",
+    "puppeteer": "^24.9.0",
     "remark-parse": "^11.0.0",
+    "svg-to-pdfkit": "^0.1.8",
     "unified": "^11.0.5",
     "winston": "^3.13.0"
   },

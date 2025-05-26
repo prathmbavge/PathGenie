@@ -61,7 +61,12 @@ const ensureValidResources = (node) => {
 export default {
     getAllMindmaps: asyncHandler(async (req, res) => {
         const { user } = req;
-        const mindmaps = await Mindmap.find({ owner: user.id })
+        const mindmaps = await Mindmap.find({
+            $or: [
+                { owner: user.id },
+                { visibility: "public" }
+            ]
+        })
             .populate("rootNode")
             .sort({ createdAt: -1 });
         res.status(200).json(new ApiResponse(200, { mindmaps }, "Mindmaps fetched successfully"));
@@ -273,7 +278,7 @@ export default {
 
         try {
             const userProfile = { profession: user.profession || 'unknown', experienceYears: user.experienceYears || 0 };
-            const { resources } = await gatherResources(node.data.label + '-' + node.data.shortDesc, userProfile);
+            const { resources } = await gatherResources(node.data.label + '-' + node.data.shortDesc, mindmap.title, userProfile);
             node.resources = resources;
             await node.save();
             res.status(200).json(new ApiResponse(200, { resources }, "Resources gathered"));

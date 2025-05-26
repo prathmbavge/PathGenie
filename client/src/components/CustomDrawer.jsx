@@ -30,7 +30,7 @@ const CustomDrawer = React.memo(
           autoSaveId="custom-drawer"
           className="h-full"
         >
-          <Panel minSize={10} className="overflow-hidden">
+          <Panel minSize={3} className="overflow-hidden">
             <main className="h-full">{children}</main>
           </Panel>
 

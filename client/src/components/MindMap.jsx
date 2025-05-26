@@ -97,7 +97,7 @@ const RoadmapWrapper = React.memo(
           if (matchedNode) {
             focusNode(matchedNode.id);
           }
-        }, 300),
+        }, 400),
       [focusNode]
     );
 

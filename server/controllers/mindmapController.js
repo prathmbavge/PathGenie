@@ -159,9 +159,8 @@ export default {
 
         const { nodes: updatedNodes, edges } = generateEdges(nodes);
         // console.log("Updated nodes:", updatedNodes);
-        res.status(200).json(new ApiResponse(200, { mindmap, nodes: updatedNodes, edges }, "Mindmap fetched"));
+        res.status(200).json(new ApiResponse(200, {  nodes: updatedNodes, edges }, "Mindmap fetched"));
     }),
-
 
     expandNode: asyncHandler(async (req, res) => {
         const { mindmapId, nodeId } = req.params;

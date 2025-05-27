@@ -231,4 +231,4 @@ export const getLayoutedElements = (nodes, edges, options = {}) => {
     showErrorToast("Failed to compute layout. Using default positions.");
     return { nodes, edges };
   }
-};
+}

@@ -6,6 +6,8 @@ import ArrowIcon from "../Icons/ArrowIcon";
 import LoginIcon from "../Icons/LoginIcon";
 import constants from "../../../constants";
 
+import { FaGoogle, FaGithub } from "react-icons/fa";
+
 const AuthForm = ({ isLogin = false }) => {
   const [formData, setFormData] = useState({
     email: "",

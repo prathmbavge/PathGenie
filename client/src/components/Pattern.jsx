@@ -73,10 +73,10 @@ const StyledWrapper = styled.div`
       40px 70px;
     background-color: #000000;
     background-size: 80px 140px;
-    box-shadow:
-      inset 0 0 150px rgba(255, 255, 255, 0.15),
-      inset 0 0 30px rgba(255, 255, 255, 0.3),
-      0 0 50px rgba(255, 255, 255, 0.2);
+    // box-shadow:
+    //   inset 0 0 150px rgba(255, 255, 255, 0.15),
+    //   inset 0 0 30px rgba(255, 255, 255, 0.3),
+    //   0 0 50px rgba(255, 255, 255, 0.2);
     position: relative;
     overflow: hidden;
 }

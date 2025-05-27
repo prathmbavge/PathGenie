@@ -67,7 +67,7 @@ function PrivateRoute({ children }) {
 }
 
 function PublicRoute({ children }) {
-  const { data: session, isPending } = useSession();
+  const { data: session, isPending, error } = useSession();
 
   if (isPending) {
     return (
@@ -82,26 +82,37 @@ function PublicRoute({ children }) {
   if (session) {
     return <Navigate to="/dashboard" replace />;
   }
+  if (error) {
+    console.error("Session fetch error:", error);
+    return (
+      <div className="min-h-screen flex items-center justify-center ">
+        <div className="shadow-lg p-8 sm:p-12 w-full max-w-md">
+          <p className="text-center text-orange-500">
+            Failed to load session. Please try again.
+          </p>
+          <div className="mt-4 text-center">
+            <button
+              onClick={() => window.location.reload()}
+              className=" text-white font-bold py-2 px-4 border"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return children;
 }
 
 export default function App() {
-  const { data: session, isPending } = useSession();
+  const { data: session } = useSession();
   const location = useLocation();
-
-  // Show a full-screen loader while auth is initializing
-  if (isPending) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center bg-black bg-blur-50 backdrop-blur ">
-        <span className="text-gray-500">Checking authentication…</span>
-      </div>
-    );
-  }
 
   // Determine which routes should hide the Navbar:
   //   • public pages: "/", "/login", "/register"
-  //   • mindmap pages: any path starting with "/mindmap/"
+  //   • mindmap pages: any path starting with "/mindmap/" (dynamic)
   const publicPaths = ["/", "/login", "/register"];
   const isPublicPath =
     publicPaths.includes(location.pathname) ||
@@ -112,7 +123,7 @@ export default function App() {
 
   return (
     <Pattern>
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen max-w-screen">
         {shouldShowNavbar && <Navbar />}
 
         <div className="flex-grow">
@@ -174,7 +185,7 @@ export default function App() {
             style: {
               fontSize: "1.2rem",
               fontFamily: "Times New Roman, serif",
-              backgroundColor: "rgba(255, 255, 255, 0.1)",
+              backgroundColor: "rgba(0, 0, 0, 0.2)",
               color: "#fff",
               borderRadius: "0",
             },

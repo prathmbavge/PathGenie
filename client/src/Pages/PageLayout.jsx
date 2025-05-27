@@ -1,8 +1,8 @@
 import React from "react";
 
-const PageLayout = ({ children, maxWidth = "max-w-lg" }) => (
-  <div className="min-h-screen flex items-center justify-center">
-    <div className={`shadow-lg p-2 sm:p-6 w-full ${maxWidth}`}>
+const PageLayout = ({ children }) => (
+  <div className="min-h-screen flex items-center justify-center min-w-screen overflow-y-auto">
+    <div className={`shadow-lg w-screen`}>
       {children}
     </div>
   </div>

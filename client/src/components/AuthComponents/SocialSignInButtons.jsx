@@ -7,6 +7,7 @@ import GoogleIcon from "../Icons/GoogleIcon";
 import GitHubIcon from "../Icons/GitHubIcon";
 import constants from "../../../constants";
 
+import { FaGoogle, FaGithub } from "react-icons/fa";
 const SocialSignInButtons = ({ onError }) => {
   const handleSocialSignIn = useCallback(
     async (provider) => {

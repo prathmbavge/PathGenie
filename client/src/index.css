@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
 ::selection {
-  /* // gradient color bg */
   background-color: #ffcfcf;
   color: rgb(0, 0, 0);
 }

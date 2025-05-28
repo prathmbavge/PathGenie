@@ -5,8 +5,7 @@ import PageLayout from "./PageLayout";
 import SocialSignInButtons from "../components/AuthComponents/SocialSignInButtons";
 import AuthForm from "../components/AuthComponents/AuthForm";
 import SlideButton from "../components/Buttons/SlideButton";
-import LoginIcon from "../components/Icons/LoginIcon";
-
+import { GrLogin } from "react-icons/gr";
 const Register = () => {
   const navigate = useNavigate();
   const [socialError, setSocialError] = useState("");
@@ -18,7 +17,7 @@ const Register = () => {
         <TrueFocus
           sentence="Register Here"
           blurAmount={6}
-          borderColor="white"
+          borderColor="orange"
           glowColor="red"
           animationDuration={0.5}
         />
@@ -46,7 +45,7 @@ const Register = () => {
           <div className="w-7/12 max-w-xs">
             <SlideButton
               text="Login"
-              icon={<LoginIcon />}
+              icon={<GrLogin />}
               onClick={() => navigate("/login")}
               fullWidth={true}
             />

@@ -1,6 +1,5 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-// import PropTypes from "proptypes";
 
 const FormControl = styled.div`
   position: relative;
@@ -42,21 +41,58 @@ const InputBorder = styled.span`
   ${Input}:hover + & {
     transform: scaleX(1);
   }
-    ${Input}:focus + & {
-        transform: scaleX(1);
-    }
+  ${Input}:focus + & {
+    transform: scaleX(1);
+  }
+`;
+
+const AnimatedPlaceholder = styled.span`
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding-inline: 1em;
+  padding-block: 0.8em;
+  color: rgba(255, 255, 255, 0.7);
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  opacity: ${({ isVisible }) => (isVisible ? 1 : 0)};
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
 `;
 
 const GradientInput = ({
-   id,
+  id,
   name,
   type = "text",
   value,
   onChange,
-  placeholder = "Type something intelligent",
+  placeholders = ["Type something intelligent", "Type something creative"],
   required = false,
   style,
-  className, }) => {
+  className,
+  duration = 2000,
+}) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isVisible, setIsVisible] = useState(true);
+  const [isInputFocused, setIsInputFocused] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsVisible(false);
+      setTimeout(() => {
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % placeholders.length);
+        setIsVisible(true);
+      }, 300); // Delay for fade-out animation
+    }, duration); // Change placeholder every 3 seconds
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, [placeholders, duration]);
+
+  const handleFocus = () => setIsInputFocused(true);
+  const handleBlur = () => setIsInputFocused(false);
+
   return (
     <FormControl>
       <Input
@@ -65,7 +101,9 @@ const GradientInput = ({
         type={type}
         value={value}
         onChange={onChange}
-        placeholder={placeholder}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        placeholder=""
         required={required}
         className={className}
         style={{
@@ -74,21 +112,14 @@ const GradientInput = ({
           ...style,
         }}
       />
+      {value === "" && !isInputFocused && (
+        <AnimatedPlaceholder isVisible={isVisible}>
+          {placeholders[currentIndex]}
+        </AnimatedPlaceholder>
+      )}
       <InputBorder />
     </FormControl>
   );
 };
-
-// GradientInput.propTypes = {
-//   id: PropTypes.string,
-//   name: PropTypes.string,
-//   type: PropTypes.string,
-//   value: PropTypes.string,
-//   onChange: PropTypes.func,
-//   placeholder: PropTypes.string,
-//   required: PropTypes.bool,
-//   style: PropTypes.object,
-//   className: PropTypes.string,
-// };
 
 export default GradientInput;

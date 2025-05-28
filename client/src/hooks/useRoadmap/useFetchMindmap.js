@@ -116,6 +116,7 @@ import { requestHandler } from "../../../utils/index";
 import { showErrorToast } from "../../../utils/toastUtils";
 import { getMindmap, getNodeResources } from "../../api/mindmapApi";
 import { getLayoutedElements } from "../../../utils/layout";
+import { useSession } from "../../lib/auth-client";
 
 /**
  * Hook: useFetchMindmap
@@ -137,8 +138,10 @@ export const useFetchMindmap = (
 ) => {
   const abortControllerRef = useRef(null);
 
+  const { data: session } = useSession();
+
   const fetchMindmap = useCallback(
-    async () => {
+    () => {
       if (!mindmapId) {
         showErrorToast("No mindmap ID provided.");
         return;
@@ -150,12 +153,14 @@ export const useFetchMindmap = (
       }
       abortControllerRef.current = new AbortController();
 
-      await requestHandler(
+      requestHandler(
         () => getMindmap(mindmapId, abortControllerRef.current.signal),
         setLoading,
-        async (res) => {
+        "Fetching mindmap...",
+        (res) => {
           const nodes = res.data.nodes;
           const edges = res.data.edges;
+          const ownerId = res.data.ownerId;
           // console.log("Fetched mindmap nodes:", nodes);
           // console.log("Fetched mindmap edges:", edges);
 
@@ -197,32 +202,25 @@ export const useFetchMindmap = (
               type: "custom",
               data: {
                 id: nodeId,
-                status: node.status,
+                status: session?.user?.id === ownerId ? node.status : undefined,
                 shortDesc: node.data.shortDesc,
                 label: node.data.label,
-                onExpand: node.isLeafNode ? expandNodeHandler : undefined,
-                onUpdate: updateNodeHandler,
+                onExpand: node.isLeafNode ? ((session?.user?.id === ownerId) ? expandNodeHandler : undefined) : undefined,
+                onUpdate: session?.user?.id === ownerId ? updateNodeHandler : undefined,
                 onCollapse: node.isLeafNode ? undefined : toggleCollapse,
                 onDownloadResources: downloadResourcesHandler,
                 onDelete: async () => {
                   // Placeholder for node deletion
                 },
-                openDrawer: async () => {
-                  try {
-                    const { data } = await getNodeResources(
-                      mindmapId,
-                      node._id,
-                      abortControllerRef.current.signal
-                    );
-                    // console.log("Fetched node resources:", data.resources);
-                    openDrawer(data.resources || {}, node._id);
-                  } catch (error) {
-                    if (error.name !== "AbortError") {
-                      showErrorToast("Failed to fetch node resources.");
-                    }
-                  }
+                openDrawer: () => {
+                  requestHandler(
+                    () => getNodeResources(mindmapId, node._id, abortControllerRef.current.signal),
+                    setLoading,
+                    "Fetching node resources...",
+                    (res) => openDrawer(res.data.resources || {}, node._id)
+                  )
                 },
-                
+
               },
               position: { x: 10, y: hasChildren ? 10 : 110 }, // Offset y for children to avoid overlap
               parentId,
@@ -259,12 +257,7 @@ export const useFetchMindmap = (
           setNodes(layoutedNodes);
           setEdges(layoutedEdges);
         },
-        (error) => {
-          if (error.name !== "AbortError") {
-            console.error("Error fetching mindmap:", error);
-            showErrorToast("Failed to fetch mindmap data.");
-          }
-        }
+
       );
     },
     [
@@ -276,7 +269,8 @@ export const useFetchMindmap = (
       expandNodeHandler,
       updateNodeHandler,
       toggleCollapse,
-        downloadResourcesHandler, // Added so React re-creates this callback if it changes
+      downloadResourcesHandler, // Added so React re-creates this callback if it changes
+      session
     ]
   );
 

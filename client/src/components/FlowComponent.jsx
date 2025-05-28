@@ -67,6 +67,10 @@ const FlowComponent = React.memo(
                 aria-label="Search nodes input"
               />
             </div>
+            
+          </Panel>
+          <Panel position="top-right">
+        
           </Panel>
           <Background />
         </ReactFlow>

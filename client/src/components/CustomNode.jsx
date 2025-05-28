@@ -5,7 +5,7 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import { Handle, Position, NodeResizeControl  } from "@xyflow/react";
+import { Handle, Position } from "@xyflow/react";
 import {
   FaChevronDown,
   FaCheck,
@@ -14,6 +14,7 @@ import {
   FaExpandAlt,
   FaCompressAlt,
 } from "react-icons/fa";
+import { AiOutlineStop } from "react-icons/ai";
 import styles from "./CustomNode.module.css";
 
 const STATUS = {
@@ -117,28 +118,30 @@ const CustomNode = React.memo(({ data, selected }) => {
       >
         <div className={styles.header}>
           <div className={styles.leftGroup}>
-            <button
-              className={styles.statusButton}
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleStatus();
-              }}
-              aria-label={`Mark as ${
-                status === STATUS.COMPLETED ? "Learning" : "Completed"
-              }`}
-            >
-              {status === STATUS.COMPLETED ? (
-                <FaCheck
-                  className={styles.checkIcon}
-                  title="Marked as Learning"
-                />
-              ) : (
-                <FaBook
-                  className={styles.bookIcon}
-                  title="Marked as Completed"
-                />
-              )}
-            </button>
+            {data?.status && (
+              <button
+                className={styles.statusButton}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleStatus();
+                }}
+                aria-label={`Mark as ${
+                  status === STATUS.COMPLETED ? "Learning" : "Completed"
+                }`}
+              >
+                {status === STATUS.COMPLETED ? (
+                  <FaCheck
+                    className={styles.checkIcon}
+                    title="Marked as Learning"
+                  />
+                ) : (
+                  <FaBook
+                    className={styles.bookIcon}
+                    title="Marked as Completed"
+                  />
+                )}
+              </button>
+            )}
           </div>
           <div className={styles.controls}>
             {data.shortDesc && (
@@ -209,11 +212,17 @@ const CustomNode = React.memo(({ data, selected }) => {
               className={styles.handleIconInner}
               title="Collapse"
             />
-          ) : (
+          ) : data.onExpand ? (
             <FaExpandAlt
               size={25}
               className={styles.handleIconInner}
               title="Expand"
+            />
+          ) : (
+            <AiOutlineStop 
+              size={25}
+              className={styles.handleIconInner}
+              title="End"
             />
           )}
         </div>

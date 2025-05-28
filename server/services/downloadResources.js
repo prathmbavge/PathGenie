@@ -28,12 +28,12 @@ const __dirname = path.dirname(__filename);
 
 
 // Utility: Download an image URL to a temporary file
-async function downloadImageToTemp(url) {
-    const response = await axios.get(url, { responseType: 'arraybuffer' });
-    const tempFilename = path.join(__dirname, `tmp_${Date.now()}_${path.basename(url)}`);
-    fs.writeFileSync(tempFilename, response.data);
-    return tempFilename;
-}
+// async function downloadImageToTemp(url) {
+//     const response = await axios.get(url, { responseType: 'arraybuffer' });
+//     const tempFilename = path.join(__dirname, `tmp_${Date.now()}_${path.basename(url)}`);
+//     fs.writeFileSync(tempFilename, response.data);
+//     return tempFilename;
+// }
 
 async function generateMarkmapSvgScreenshot(markdown) {
     let browser;
@@ -240,35 +240,35 @@ const downloadResources = asyncHandler(async (req, res) => {
         }
 
         // Images
-        if (nodeData.resources.images?.length > 0) {
-            doc
-                .font('Helvetica-Bold')
-                .fontSize(12)
-                .text('Images:', { align: 'left' });
-            doc.moveDown(0.5);
+        // if (nodeData.resources.images?.length > 0) {
+        //     doc
+        //         .font('Helvetica-Bold')
+        //         .fontSize(12)
+        //         .text('Images:', { align: 'left' });
+        //     doc.moveDown(0.5);
 
-            for (const image of nodeData.resources.images) {
-                try {
-                    const tempPath = await downloadImageToTemp(image.url);
-                    doc.image(tempPath, { fit: [400, 300], align: 'center' });
-                    if (image.caption) {
-                        doc
-                            .font('Helvetica-Oblique')
-                            .fontSize(10)
-                            .text(`Caption: ${image.caption}`, { align: 'center' });
-                    }
-                    fs.unlinkSync(tempPath);
-                } catch (err) {
-                    doc
-                        .font('Helvetica')
-                        .fontSize(10)
-                        .text(`- ${image.url} (Failed to load)`, { align: 'left' });
-                }
-                doc.moveDown(0.5);
-            }
+        //     for (const image of nodeData.resources.images) {
+        //         try {
+        //             const tempPath = await downloadImageToTemp(image.url);
+        //             doc.image(tempPath, { fit: [400, 300], align: 'center' });
+        //             if (image.caption) {
+        //                 doc
+        //                     .font('Helvetica-Oblique')
+        //                     .fontSize(10)
+        //                     .text(`Caption: ${image.caption}`, { align: 'center' });
+        //             }
+        //             fs.unlinkSync(tempPath);
+        //         } catch (err) {
+        //             doc
+        //                 .font('Helvetica')
+        //                 .fontSize(10)
+        //                 .text(`- ${image.url} (Failed to load)`, { align: 'left' });
+        //         }
+        //         doc.moveDown(0.5);
+        //     }
 
-            doc.moveDown(0.5);
-        }
+        //     doc.moveDown(0.5);
+        // }
 
         // Markdown
         if (nodeData.resources.markdown?.length > 0) {
@@ -734,47 +734,47 @@ const downloadResources = asyncHandler(async (req, res) => {
         resourceChildren.push(new Paragraph({ text: '' }));
     }
 
-    if (nodeData.resources.images?.length > 0) {
-        resourceChildren.push(
-            new Paragraph({ text: 'Images:', style: 'Heading2Custom' })
-        );
-        for (const image of nodeData.resources.images) {
-            try {
-                const tempPath = await downloadImageToTemp(image.url);
-                const dataBuffer = fs.readFileSync(tempPath);
+    // if (nodeData.resources.images?.length > 0) {
+    //     resourceChildren.push(
+    //         new Paragraph({ text: 'Images:', style: 'Heading2Custom' })
+    //     );
+    //     for (const image of nodeData.resources.images) {
+    //         try {
+    //             const tempPath = await downloadImageToTemp(image.url);
+    //             const dataBuffer = fs.readFileSync(tempPath);
 
-                resourceChildren.push(
-                    new Paragraph({
-                        children: [
-                            new ImageRun({
-                                data: dataBuffer,
-                                transformation: { width: 400, height: 300 },
-                            }),
-                        ],
-                        alignment: AlignmentType.CENTER,
-                    })
-                );
-                if (image.caption) {
-                    resourceChildren.push(
-                        new Paragraph({
-                            text: `Caption: ${image.caption}`,
-                            style: 'ResourceText',
-                            alignment: AlignmentType.CENTER,
-                        })
-                    );
-                }
-                fs.unlinkSync(tempPath);
-            } catch (err) {
-                resourceChildren.push(
-                    new Paragraph({
-                        text: `- ${image.url} (Failed to load)`,
-                        style: 'ResourceText',
-                    })
-                );
-            }
-            resourceChildren.push(new Paragraph({ text: '' }));
-        }
-    }
+    //             resourceChildren.push(
+    //                 new Paragraph({
+    //                     children: [
+    //                         new ImageRun({
+    //                             data: dataBuffer,
+    //                             transformation: { width: 400, height: 300 },
+    //                         }),
+    //                     ],
+    //                     alignment: AlignmentType.CENTER,
+    //                 })
+    //             );
+    //             if (image.caption) {
+    //                 resourceChildren.push(
+    //                     new Paragraph({
+    //                         text: `Caption: ${image.caption}`,
+    //                         style: 'ResourceText',
+    //                         alignment: AlignmentType.CENTER,
+    //                     })
+    //                 );
+    //             }
+    //             fs.unlinkSync(tempPath);
+    //         } catch (err) {
+    //             resourceChildren.push(
+    //                 new Paragraph({
+    //                     text: `- ${image.url} (Failed to load)`,
+    //                     style: 'ResourceText',
+    //                 })
+    //             );
+    //         }
+    //         resourceChildren.push(new Paragraph({ text: '' }));
+    //     }
+    // }
     // codeSnippets
     if (nodeData.resources.codeSnippets?.length > 0) {
         // Heading for code snippets

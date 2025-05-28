@@ -45,8 +45,10 @@
     "nodemailer": "^6.9.14",
     "pdfkit": "^0.15.2",
     "pdfkit-markdown": "^0.2.0",
+    "punycode": "^2.3.1",
     "puppeteer": "^24.9.0",
     "remark-parse": "^11.0.0",
+    "resend": "^4.5.1",
     "svg-to-pdfkit": "^0.1.8",
     "unified": "^11.0.5",
     "winston": "^3.13.0"

@@ -1,5 +1,4 @@
 import { useRef, useCallback } from "react";
-import { showErrorToast, showSuccessToast } from "../../../utils/toastUtils";
 import { requestHandler } from "../../../utils/index";
 import { updateNode } from "../../api/mindmapApi";
 
@@ -33,6 +32,7 @@ export const useUpdateNode = (
         () =>
           updateNode(mindmapId, nodeId, newData, abortControllerRef.current.signal),
         setLoading,
+        "Updating node...",
         async (res) => {
           // Update nodes in the state
           const updatedNodes = nodesRef.current.map((node) =>
@@ -46,14 +46,7 @@ export const useUpdateNode = (
 
           setNodes(updatedNodes);
           setEdges(updatedEdges);
-          showSuccessToast("Node updated successfully");
         },
-        (error) => {
-          if (error.name !== "AbortError") {
-            console.error("Error updating node:", error);
-            showErrorToast(error.message || "Failed to update node");
-          }
-        }
       );
     },
     [mindmapId, nodesRef, edgesRef, setLoading, setNodes, setEdges]

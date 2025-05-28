@@ -6,27 +6,7 @@ import PageLayout from "./PageLayout";
 import SocialSignInButtons from "../components/AuthComponents/SocialSignInButtons";
 import AuthForm from "../components/AuthComponents/AuthForm";
 import SlideButton from "../components/Buttons/SlideButton";
-
-const ArrowIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="1rem"
-    height="1rem"
-    fill="none"
-    viewBox="0 0 10 16"
-    aria-hidden="true"
-    focusable="false"
-    className="text-gray-900 dark:text-white"
-  >
-    <path
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      d="m2.707 14.293 5.586-5.586a1 1 0 0 0 0-1.414L2.707 1.707A1 1 0 0 0 1 2.414v11.172a1 1 0 0 0 1.707.707Z"
-    />
-  </svg>
-);
+import { FaUserPlus } from "react-icons/fa";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -39,14 +19,14 @@ const Login = () => {
         <TrueFocus
           sentence="Login Here"
           blurAmount={6}
-          borderColor="white"
+          borderColor="orange"
           glowColor="red"
           animationDuration={0.5}
         />
       </h2>
 
       {/* Social Sign-In Buttons */}
-      <SocialSignInButtons onError={setSocialError} />
+      <SocialSignInButtons setError={setSocialError} />
       {socialError && (
         <div className="text-red-500 text-sm text-center mb-4">
           {socialError}
@@ -67,7 +47,7 @@ const Login = () => {
           <div className="w-7/12 max-w-xs">
             <SlideButton
               text="Register"
-              icon={<ArrowIcon />}
+              icon={<FaUserPlus />}
               onClick={() => navigate("/register")}
               fullWidth={true}
             />

@@ -1,12 +1,9 @@
 import React, { useState } from "react";
 import GradientInput from "../Input/GradientInput";
 import SlideButton from "../Buttons/SlideButton";
-import { signIn, signUp } from "../../lib/auth-client";
-import ArrowIcon from "../Icons/ArrowIcon";
-import LoginIcon from "../Icons/LoginIcon";
-import constants from "../../../constants";
-
-import { FaGoogle, FaGithub } from "react-icons/fa";
+import { userLogin, userRegister } from "../../api/authApi.js";
+import { FaUserPlus } from "react-icons/fa";
+import { GrLogin } from "react-icons/gr";
 
 const AuthForm = ({ isLogin = false }) => {
   const [formData, setFormData] = useState({
@@ -58,59 +55,15 @@ const AuthForm = ({ isLogin = false }) => {
 
     setIsSubmitting(true);
     try {
-      if (isLogin) {
-        await signIn.email(
-          {
-            email: formData.email,
-            password: formData.password,
-            callbackURL: `${
-              constants.mode === "production" ? "" : `${constants.clientUrl}`
-            }/dashboard`,
-          },
-          {
-            onError: (error) => {
-              setErrors((prev) => ({
-                ...prev,
-                general: error.error.message,
-              }));
-            },
-          }
-        );
-        console.log("User logged in successfully:", { email: formData.email });
-      } else {
-        await signUp.email(
-          {
-            email: formData.email,
-            password: formData.password,
-            name: formData.username,
-            callbackURL: `${
-              constants.mode === "production" ? "" : `${constants.clientUrl}`
-            }/profile`,
-          },
-          {
-            onError: (error) => {
-              setErrors((prev) => ({
-                ...prev,
-                general: error.error.message,
-              }));
-            },
-          }
-        );
-        console.log("Trying User registration:", {
-          email: formData.email,
-          username: formData.username,
-        });
-      }
+      const authAction = isLogin ? userLogin : userRegister;
+      await authAction(formData, setErrors);
+      // Handle successful login/registration (e.g., navigate to dashboard)
+      console.log(`${isLogin ? "Login" : "Registration"} successful`);
     } catch (error) {
-      console.error(
-        `${isLogin ? "Login" : "Registration"} failed:`,
-        error.message
-      );
+      console.error(`${isLogin ? "Login" : "Registration"} error:`, error);
       setErrors((prev) => ({
         ...prev,
-        general: `${
-          isLogin ? "Login" : "Registration"
-        } failed. Please try again.`,
+        general: error.message || "An unexpected error occurred.",
       }));
     } finally {
       setIsSubmitting(false);
@@ -118,7 +71,7 @@ const AuthForm = ({ isLogin = false }) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-md mx-auto p-3 rounded-lg shadow-md">
       {isLogin ? (
         <>
           <InputField
@@ -206,11 +159,11 @@ const AuthForm = ({ isLogin = false }) => {
         <div className="text-red-500 text-sm text-center">{errors.general}</div>
       )}
 
-      <div className="text-center border-b-2 border-gray-300 pb-3 border-x-2">
+      <div className="text-center border-b-2 pb-3">
         <SlideButton
           type="button"
           text={isLogin ? "Login" : "Register"}
-          icon={isLogin ? <LoginIcon /> : <ArrowIcon />}
+          icon={isLogin ? <GrLogin /> : <FaUserPlus />}
           fullWidth={true}
           disabled={isSubmitting}
           onClick={handleSubmit}
@@ -250,9 +203,10 @@ const InputField = ({
       type={type}
       value={value}
       onChange={onChange}
-      placeholder={placeholder}
-      className="w-full"
+      placeholders={[`${placeholder}`]}
+      className="w-full mt-1"
       required={required}
+      duration={10000}
     />
     {error && <div className="text-red-500 text-xs mt-1">{error}</div>}
   </div>

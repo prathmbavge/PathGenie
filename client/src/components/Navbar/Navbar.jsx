@@ -6,6 +6,7 @@ import SlideButton from "../../components/Buttons/SlideButton";
 import pathgenie from "../../assets/pathgeniebanner.png";
 import { useNavbarVisibility } from "../../hooks/useNavbarVisibility";
 import { navLinks, linkBaseClasses, activeLinkClasses } from "./constants";
+import { GrLogin, GrLogout } from "react-icons/gr";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ const Navbar = () => {
     setIsSigningOut(true);
     try {
       await authClient.signOut();
-      navigate("/login");
+      navigate("/");
     } catch (error) {
       console.error("Sign out error:", error.message);
     } finally {
@@ -44,24 +45,7 @@ const Navbar = () => {
           text="Sign Out"
           onClick={handleSignOut}
           disabled={isSigningOut}
-          icon={
-            <svg
-              className="w-5 h-5 text-gray-800 dark:text-white"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 18 16"
-            >
-              <path
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M1 8h11m0 0L8 4m4 4-4 4m4-11h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-3"
-              />
-            </svg>
-          }
-          fullWidth={true}
+          icon={<GrLogout className="w-5 h-5 text-orange" />}
           style={{ width: "25rem" }}
         />
       );
@@ -71,24 +55,9 @@ const Navbar = () => {
       <SlideButton
         text="Sign In"
         onClick={() => navigate("/login")}
-        icon={
-          <svg
-            className="w-5 h-5 text-gray-800 dark:text-white"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 18 16"
-          >
-            <path
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M1 8h11m0 0L8 4m4 4-4 4m4-11h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-3"
-            />
-          </svg>
-        }
-        style={{ width: "20vw" }}
+        icon={<GrLogin className="w-5 h-5 text-gray-800 dark:text-white" />}
+        fullWidth={true}
+        style={{ width: "25rem" }}
       />
     );
   };
@@ -96,7 +65,9 @@ const Navbar = () => {
   return (
     <nav
       className={`fixed w-full top-0 z-50 transition-transform duration-300 ${
-        isNavbarVisible ? "transform translate-y-0" : "transform -translate-y-full"
+        isNavbarVisible
+          ? "transform translate-y-0"
+          : "transform -translate-y-full"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -147,27 +118,29 @@ const Navbar = () => {
           </div>
 
           {/* Navigation Links - Desktop */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map(({ to, label }) => (
-              <NavLink
-                key={to}
-                to={to}
-                className={({ isActive }) =>
-                  `${linkBaseClasses} ${isActive ? activeLinkClasses : ""}`
-                }
-              >
-                {label}
-                <span className="absolute bottom-0 left-0 w-0 h-px bg-red-400 transition-all duration-300 group-hover:w-full"></span>
-              </NavLink>
-            ))}
-
-            {/* Sign In / Sign Out */}
-            <AuthButton />
-          </div>
+          {session?.user && (
+            <div className="hidden md:flex items-center space-x-8">
+              {navLinks.map(({ to, label }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  className={({ isActive }) =>
+                    `${linkBaseClasses} ${isActive ? activeLinkClasses : ""}`
+                  }
+                >
+                  {label}
+                  <span className="absolute bottom-0 left-0 w-0 h-px bg-orange-400 transition-all duration-300 group-hover:w-full"></span>
+                </NavLink>
+              ))}
+            </div>
+          )}
+          {!isMenuOpen &&
+          <AuthButton />
+          }
         </div>
 
         {/* Mobile Menu */}
-        {isMenuOpen && (
+        {isMenuOpen && session?.user && (
           <div className="md:hidden  bg-blur-50 backdrop-blur-md rounded-lg shadow-lg p-4">
             <div className="flex flex-col items-center space-y-4 py-4">
               {navLinks.map(({ to, label }) => (
@@ -187,59 +160,8 @@ const Navbar = () => {
 
               {isPending ? (
                 <span className="text-gray-300">Loading...</span>
-              ) : session?.user ? (
-                <SlideButton
-                  text="Sign Out"
-                  onClick={() => {
-                    handleSignOut();
-                    toggleMenu();
-                  }}
-                  disabled={isSigningOut}
-                  icon={
-                    <svg
-                      className="w-6 h-6 text-gray-800 dark:text-white"
-                      aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 15 15"
-                    >
-                      <path
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M1 8h11m0 0L8 4m4 4-4 4m4-11h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-3"
-                      />
-                    </svg>
-                  }
-                  fullWidth={true}
-                />
               ) : (
-                <SlideButton
-                  text="Sign In"
-                  onClick={() => {
-                    navigate("/login");
-                    toggleMenu();
-                  }}
-                  icon={
-                    <svg
-                      className="w-6 h-6 text-gray-800 dark:text-white"
-                      aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 15 15"
-                    >
-                      <path
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M1 8h11m0 0L8 4m4 4-4 4m4-11h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-3"
-                      />
-                    </svg>
-                  }
-                  fullWidth={true}
-                />
+                <AuthButton />
               )}
             </div>
           </div>

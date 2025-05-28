@@ -6,8 +6,8 @@ const fetchPerplexityData = async (type, input, mainTopic, userProfile = {}) => 
   const API_KEY = process.env.PERPLEXITY_API_KEY;
   const BASE_URL = 'https://api.perplexity.ai';
 
-  // Extract user profile details
-  const { profession = 'unknown', experienceYears = 0 } = userProfile;
+  // // Extract user profile details
+  // const { profession = 'unknown', experienceYears = 0 } = userProfile;
 
   let systemPrompt;
   switch (type) {
@@ -15,7 +15,7 @@ const fetchPerplexityData = async (type, input, mainTopic, userProfile = {}) => 
       systemPrompt = `
 **System Instructions for Generating a Basic Mindmap**
 
-You are an AI assistant **with web search capabilities**, tasked with creating a personalized learning mindmap/roadmap for a **${profession}** with **${experienceYears} years of experience**. The mindmap/roadmap must be tailored to the topic "${input}" and the user's professional background.
+You are an AI assistant **with web search capabilities**, tasked with creating a personalized learning mindmap/roadmap for a **${userProfile} (consider this only if valid input)**. The mindmap/roadmap must be tailored to the topic "${input}" and the user's professional background.
 
 **Output Requirements:**
 - Generate a hierarchical mindmap as a **strict matching JSON tree** with **exactly 6 nodes and more 2 sub nodes for each**, including multiple levels.
@@ -38,13 +38,13 @@ You are an AI assistant **with web search capabilities**, tasked with creating a
 - **Use web search to verify information** and ensure accuracy.
 - **Do not hallucinate or invent content.**
 
-**Example Output:**
+**Example Output:** (do not add any extra text like json annotaion)
 {
   "nodes": [
     {"data": {"label": "Root Topic", "shortDesc": "Overview of the topic"}, "parentIndex": null},
     {"data": {"label": "Child 1", "shortDesc": "Basic concept"}, "parentIndex": 0}
   ],
-  "tags": [" tags related to the topic seperated by commas (4 to 7 tags)"]
+  "tags": ["tags related to the topic seperated by commas (4-5 tags)"]
 }
 **Final Instruction:** Your entire response must be the **JSON object only**. No greetings or additional text.
 `;
@@ -53,7 +53,7 @@ You are an AI assistant **with web search capabilities**, tasked with creating a
       systemPrompt = `
 **System Instructions for Generating Subtopics**
 
-You are an AI assistant **with web search capabilities**, helping a **${profession}** with **${experienceYears} years of experience** expand their learning mindmap on "${input}". Generate **2-5 subtopics related to the given topic and main topic is ${mainTopic}**.
+You are an AI assistant **with web search capabilities**, helping a user with **${userProfile}**. expand their learning mindmap on "${input}". Generate **2-5 subtopics considering given topic and main-topic is ${mainTopic}**.
 
 **Output Requirements:**
 - Provide a **strict matching JSON tree** with a "nodes" array.
@@ -86,7 +86,7 @@ You are an AI assistant **with web search capabilities**, helping a **${professi
       systemPrompt = `
 **System Instructions for Generating Learning Resources**
 
-You are an Personalize AI assistant with web search capabilities, tasked with providing personalized learning resources for a user who may be a student or professional from any sector, with [experienceYears] years of experience. The subtopic topic is ${input} and main topic is ${mainTopic}.
+You are an Personalize AI assistant with web search capabilities, helping a user with **${userProfile}** tasked with providing personalized learning resources for a user who may be a student or professional from any sector. The subtopic topic is ${input} and main topic is ${mainTopic}.
 
 **Output Requirements:**
 
@@ -123,21 +123,21 @@ You are an Personalize AI assistant with web search capabilities, tasked with pr
   "resources": {
     "links": [
       {
-        "url": "https://example.com/resource1",
+        "url": "...",
         "title": "Resource 1 Title",
         "description": "A brief description of Resource 1."
       }
     ],
     "images": [
       {
-        "url": "https://example.com/image1.jpg",
+        "url": "....",
         "alt": "Image description",
         "caption": "Caption for the image"
       }
     ],
     "videos": [
       {
-        "url": "https://youtube.com/watch?v=example",
+        "url": "....",
         "title": "Video Title",
         "description": "A brief description of the video."
       }
@@ -150,6 +150,7 @@ You are an Personalize AI assistant with web search capabilities, tasked with pr
     "markdown": [
       {
         "content": "# Markdown Content\n\n## Key Points\n- Point 1\n- Point 2\n\n[Link to more resources](https://example.com)"
+
       }
     ],
     "diagrams": [
@@ -160,8 +161,8 @@ You are an Personalize AI assistant with web search capabilities, tasked with pr
     ],
     "codeSnippets": [
       {
-        "content": "// Example code snippet",
-        "language": "javascript"
+        "content": "// if required.. Example code snippet",
+        "language": "..."
       }
     ]
   }
@@ -172,7 +173,7 @@ You are an Personalize AI assistant with web search capabilities, tasked with pr
       systemPrompt = `
 **System Instructions for Summarizing PDF Content**
 
-You are an AI assistant **with web search capabilities**, summarizing PDF content for a **${profession}** with **${experienceYears} years of experience**. The input is the text content of a PDF about "${input}".
+You are an AI assistant **with web search capabilities**, summarizing PDF content for a **${userProfile}** with **${experienceYears} years of experience**. The input is the text content of a PDF about "${input}".
 
 **Output Requirements:**
 - Generate a **strict matching JSON tree** with a "nodes" array of **5-7 nodes**.
@@ -197,40 +198,6 @@ You are an AI assistant **with web search capabilities**, summarizing PDF conten
     {"data": {"label": "Point 1", "shortDesc": "Detail"}, "parentIndex": 0}
   ]
 }
-**Final Instruction:** Your entire response must be the **JSON object only**. No additional text.
-`;
-      break;
-    case 'ytSummary':
-      systemPrompt = `
-**System Instructions for Summarizing YouTube Video**
-
-You are an AI assistant **with web search capabilities**, summarizing a YouTube video for a **${profession}** with **${experienceYears} years of experience**. The input is the title or description: "${input}".
-
-**Output Requirements:**
-- Generate a **strict matching JSON tree** with a "nodes" array of **5-7 nodes**.
-- Each node must have:
-  - "data": { "label": "string", "shortDesc": "string" }
-  - "parentIndex": number or null (null for the root node)
-
-**Content Guidelines:**
-- Tailor to the user's **profession** and **experience level**.
-- Use **web search** if input is insufficient to gather video details.
-
-**Important Notes:**
-- **Do not include any text outside the JSON object.**
-- **Avoid duplicate nodes.**
-- **Ensure accuracy; no hallucinations.**
-
-**Example Output:**
-\`\`\`json
-{
-  "nodes": [
-    {"data": {"label": "Overview", "shortDesc": "Video summary"}, "parentIndex": null},
-    {"data": {"label": "Point 1", "shortDesc": "Key idea"}, "parentIndex": 0}
-  ]
-}
-\`\`\`
-
 **Final Instruction:** Your entire response must be the **JSON object only**. No additional text.
 `;
       break;
@@ -281,8 +248,8 @@ You are an AI assistant **with web search capabilities**, summarizing a YouTube 
   }
 };
 
-export const generateBasicMindmap = async (title, mainTopic, userProfile) => {
-  const data = await fetchPerplexityData('basicMindmap', title, mainTopic, userProfile);
+export const generateBasicMindmap = async (title, userProfile) => {
+  const data = await fetchPerplexityData('basicMindmap', title, title, userProfile);
   return data; // Returns { nodes: [...] }
 };
 
@@ -298,11 +265,6 @@ export const gatherResources = async (label, mainTopic, userProfile) => {
 
 // export const summarizePDF = async (pdfContent, mainTopic, userProfile) => {
 //   const data = await fetchPerplexityData('pdfSummary', pdfContent, mainTopic, userProfile);
-//   return data; // Returns { nodes: [...] }
-// };
-
-// export const summarizeYouTube = async (videoInfo, mainTopic, userProfile) => {
-//   const data = await fetchPerplexityData('ytSummary', videoInfo, mainTopic, userProfile);
 //   return data; // Returns { nodes: [...] }
 // };
 

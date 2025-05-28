@@ -1,5 +1,5 @@
 import { useRef, useCallback } from "react";
-import { showErrorToast, showSuccessToast } from "../../../utils/toastUtils";
+import { showErrorToast } from "../../../utils/toastUtils";
 import { requestHandler } from "../../../utils/index";
 import { downloadResources } from "../../api/mindmapApi";
 /**
@@ -10,7 +10,7 @@ export const useDownloadResources = (setLoading) => {
     const abortControllerRef = useRef(null);
 
     const downloadResourcesHandler = useCallback(
-        async (nodeId, format = "pdf") => {
+        (nodeId, format = "pdf") => {
             console.log("Downloading resources for node:", nodeId, "Format:", format);
             if (!nodeId) {
                 showErrorToast("Node ID is required");
@@ -29,42 +29,34 @@ export const useDownloadResources = (setLoading) => {
             }
             abortControllerRef.current = new AbortController();
 
-            try {
-                // Make API call to generate document
-                await requestHandler(
-                    () => downloadResources(nodeId, format, abortControllerRef.current.signal),
-                    setLoading,
-                    async (response) => {
-                        console.log("Download response:", response);
 
-                        // Extract filename from Content-Disposition header
-                        const contentDisposition = response.headers['content-disposition'];
-                        const fileNameMatch = contentDisposition
-                            ? contentDisposition.match(/filename="(.+)"/)
-                            : null;
-                        const fileName = fileNameMatch
-                            ? fileNameMatch[1]
-                            : `node_${nodeId}.${format === 'pdf' ? 'pdf' : 'docx'}`;
+            // Make API call to generate document   
+            requestHandler(
+                () => downloadResources(nodeId, format, abortControllerRef.current.signal),
+                setLoading,
+                "Downloading resources...",
+                (response) => {
+                    // console.log("Download response:", response);
+                    // Extract filename from Content-Disposition header
+                    const contentDisposition = response.headers['content-disposition'];
+                    const fileNameMatch = contentDisposition
+                        ? contentDisposition.match(/filename="(.+)"/)
+                        : null;
+                    const fileName = fileNameMatch
+                        ? fileNameMatch[1]
+                        : `node_${nodeId}.${format === 'pdf' ? 'pdf' : 'docx'}`;
 
-                        // Create a Blob URL and trigger download
-                        const url = window.URL.createObjectURL(new Blob([response.data]));
-                        const link = document.createElement('a');
-                        link.href = url;
-                        link.setAttribute('download', fileName);
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        window.URL.revokeObjectURL(url);
-
-                        showSuccessToast('Resources downloaded successfully');
-                    }
-                );
-            } catch (error) {
-                if (error.name !== "AbortError") {
-                    console.error("Error downloading resources:", error);
-                    showErrorToast("Failed to download resources");
+                    // Create a Blob URL and trigger download
+                    const url = window.URL.createObjectURL(new Blob([response.data]));
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', fileName);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
                 }
-            }
+            );
         },
         [setLoading]
     );

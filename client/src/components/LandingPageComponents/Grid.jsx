@@ -5,7 +5,7 @@ import { AnimatedTooltip } from "../ui/AnimatedTooltip";
 
 const Grid = () => {
   return (
-    <section id="about">
+    <section id="info">
       <BentoGrid>
         {gridItems.map((item) => {
           const IconComponent = item.icon;
@@ -20,7 +20,7 @@ const Grid = () => {
           );
         })}
       </BentoGrid>
-      <div className="flex flex-row items-center justify-center mb-10 w-full mt-10">
+      <div className="flex flex-row items-center justify-center mb-1 w-full mt-10">
           <AnimatedTooltip items={people} />
         </div>
     </section>

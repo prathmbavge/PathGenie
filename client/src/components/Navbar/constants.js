@@ -5,7 +5,6 @@ export const linkBaseClasses =
 export const activeLinkClasses = "text-white";
 
 export const navLinks = [
-  { to: "/", label: "Home" },
   { to: "/dashboard", label: "Dashboard" },
   { to: "/profile", label: "Profile" },
 ];

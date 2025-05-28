@@ -8,23 +8,21 @@ const MindmapCard = ({ mindmap, onToggleVisibility, onDelete }) => {
   const navigate = useNavigate();
   const [toggling, setToggling] = useState(false);
 
-  const handleSwitchChange = useCallback(
-    async (e) => {
-      const newVisibility = e.target.checked ? "public" : "private";
-      setToggling(true);
-      try {
-        await onToggleVisibility(mindmap._id, { visibility: newVisibility });
-      } catch (err) {
-        console.error("Failed to toggle visibility:", err);
-        showErrorToast(
-          `Failed to toggle visibility: ${err.message || "Unknown error"}`
-        );
-      } finally {
-        setToggling(false);
-      }
-    },
-    [mindmap._id, onToggleVisibility]
-  );
+  const handleToggleVisibility = useCallback(async () => {
+    const newVisibility =
+      mindmap.visibility === "public" ? "private" : "public";
+    setToggling(true);
+    try {
+      await onToggleVisibility(mindmap._id, { visibility: newVisibility });
+    } catch (err) {
+      console.error("Failed to toggle visibility:", err);
+      showErrorToast(
+        `Failed to toggle visibility: ${err.message || "Unknown error"}`
+      );
+    } finally {
+      setToggling(false);
+    }
+  }, [mindmap._id, mindmap.visibility, onToggleVisibility]);
 
   const handleDeleteClick = () => {
     const confirmDelete = () => {
@@ -50,14 +48,13 @@ const MindmapCard = ({ mindmap, onToggleVisibility, onDelete }) => {
       className="mx-auto flex items-center justify-center relative group"
     >
       {/* Delete Icon */}
-
-      <button
-        className="absolute top-2 right-2 text-red-500 hover:text-red-700 transition-colors cursor-pointer"
-        onClick={handleDeleteClick}
-        title="Delete Mindmap"
-      >
-        <MdDelete size={22} />
-      </button>
+      {onDelete && (
+        <MdDelete
+          className="absolute top-2 right-2 text-red-500 cursor-pointer"
+          size={24}
+          onClick={handleDeleteClick}
+        />
+      )}
 
       <div className="flex flex-col items-center justify-center text-center">
         <div
@@ -98,37 +95,32 @@ const MindmapCard = ({ mindmap, onToggleVisibility, onDelete }) => {
           )}
         </div>
 
-        {/* Visibility Section */}
-        <div className="mt-4 flex items-center justify-center border-1 p-2">
-          <label
-            htmlFor={`visibility-switch-${mindmap._id}`}
-            className="text-white cursor-pointer flex items-center space-x-2"
-            title={
-              mindmap.visibility === "public"
-                ? "Public Mindmap"
-                : "Private Mindmap"
-            }
-          >
-            <span>Visibility:</span>
-            <div className="flex items-center justify-center">
-              {mindmap.visibility === "public" ? (
-                <MdPublic size={24} color="green" />
-              ) : (
-                <MdLock size={24} color="red" />
-              )}
-            </div>
-          </label>
-          <div className="relative">
-            <input
-              id={`visibility-switch-${mindmap._id}`}
-              type="checkbox"
-              className="sr-only"
-              checked={mindmap.visibility === "public"}
-              onChange={handleSwitchChange}
+        {/* Visibility Toggle Button */}
+        {onToggleVisibility && (
+          <div className="mt-4 flex items-center justify-center ">
+            <button
+              onClick={handleToggleVisibility}
               disabled={toggling}
-            />
+              className={`flex items-center space-x-2 px-4 py-2 cursor-pointer ${
+                mindmap.visibility === "public"
+                  ? "bg-green-500 text-white"
+                  : "bg-red-500 text-white"
+              }`}
+            >
+              {mindmap.visibility === "public" ? (
+                <>
+                  <MdPublic size={20} />
+                  <span>Public</span>
+                </>
+              ) : (
+                <>
+                  <MdLock size={20} />
+                  <span>Private</span>
+                </>
+              )}
+            </button>
           </div>
-        </div>
+        )}
       </div>
     </GlowCard>
   );

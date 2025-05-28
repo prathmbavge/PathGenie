@@ -18,6 +18,15 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background-color: #84b1ffc4;
 }
+*{
+  font-family: "Aref Ruqaa Ink", serif;
+
+}
+html{
+  font-size: 17.5px;
+}
 body {
   @apply text-white font-stretch-normal;
+  font-family: "Aref Ruqaa Ink", serif;
+
 }

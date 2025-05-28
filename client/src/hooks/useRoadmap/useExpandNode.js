@@ -115,7 +115,7 @@
 
 import { useRef, useCallback } from "react";
 import { requestHandler } from "../../../utils/index";
-import { showErrorToast, showSuccessToast } from "../../../utils/toastUtils";
+import { showErrorToast } from "../../../utils/toastUtils";
 import { expandNode, getNodeResources } from "../../api/mindmapApi";
 import { getLayoutedElements } from "../../../utils/layout";
 
@@ -133,7 +133,7 @@ export const useExpandNode = (
   const abortControllerRef = useRef(null);
 
   const expandNodeHandler = useCallback(
-    async (nodeId) => {
+    (nodeId) => {
       if (!mindmapId) return;
 
       // Abort any ongoing expansion
@@ -142,11 +142,11 @@ export const useExpandNode = (
       }
       abortControllerRef.current = new AbortController();
 
-      await requestHandler(
-        () =>
-          expandNode(mindmapId, nodeId, abortControllerRef.current.signal),
+      requestHandler(
+        () => expandNode(mindmapId, nodeId, abortControllerRef.current.signal),
         setLoading,
-        async (res) => {
+        "Expanding node...",
+        (res) => {
           const expandedNodeId = nodeId;
           const wrapperId = `wrapper-${expandedNodeId}`;
 
@@ -169,21 +169,15 @@ export const useExpandNode = (
               shortDesc: node.data.shortDesc,
               label: node.data.label,
               onExpand: node.isLeafNode ? expandNodeHandler : undefined,
-              onUpdate: updateNodeHandler,
+              onUpdate:  updateNodeHandler,
               onCollapse: node.isLeafNode ? undefined : toggleCollapse,
-              openDrawer: async () => {
-                try {
-                  const { data } = await getNodeResources(
-                    mindmapId,
-                    node._id,
-                    abortControllerRef.current.signal
-                  );
-                  openDrawer(data.resources || {}, node._id);
-                } catch (error) {
-                  if (error.name !== "AbortError") {
-                    showErrorToast("Failed to fetch node resources.");
-                  }
-                }
+              openDrawer:  () => {
+                requestHandler(
+                  () => getNodeResources(mindmapId, node._id, abortControllerRef.current.signal),
+                  setLoading,
+                  "Fetching node resources...",
+                  (res) => openDrawer(res.data.resources || {}, node._id)
+                )
               },
             },
             position: { x: 0, y: 0 },
@@ -239,7 +233,6 @@ export const useExpandNode = (
           // Update state
           setNodes(layoutedNodes);
           setEdges(layoutedEdges);
-          showSuccessToast("Node expanded successfully");
         },
         (error) => {
           if (error.name !== "AbortError") {

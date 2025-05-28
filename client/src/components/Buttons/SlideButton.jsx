@@ -1,7 +1,7 @@
 // SlideButton.jsx
-import React from 'react';
-import PropTypes from 'prop-types';
-import styled from 'styled-components';
+import React from "react";
+import PropTypes from "prop-types";
+import styled from "styled-components";
 
 /* ----------------------------------------------------------------------------
    1) BUTTON WRAPPER
@@ -20,11 +20,11 @@ const BaseButton = styled.button`
   outline: none;
   border: none;
   background: transparent;
-  padding: 0;              /* no internal padding; the children handle spacing */
-  font-size: 1rem;         /* base font-size, adjustable via parent */
+  padding: 0; /* no internal padding; the children handle spacing */
+  font-size: 1rem; /* base font-size, adjustable via parent */
   font-family: inherit;
 
-  width: ${props => (props.fullWidth ? '100%' : 'auto')};
+  width: ${(props) => (props.fullWidth ? "100%" : "auto")};
   max-width: 12rem;
   height: auto;
 
@@ -39,7 +39,7 @@ const BaseButton = styled.button`
 
   /* :active “pressed” state */
   &:active {
-    transform: scale(0.98);
+    transform: scale(0.1);
     transition: transform 0.1s ease-in-out;
   }
 `;
@@ -48,13 +48,13 @@ const BaseButton = styled.button`
    2) BORDER OVERLAY (the white border around the button)
    ---------------------------------------------------------------------------- */
 const BorderOverlay = styled.span`
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  border: 2px solid #fefefe;
+  border: 2px solid orange;
   box-sizing: border-box;
   z-index: 0;
   pointer-events: none; /* purely decorative */
@@ -67,7 +67,7 @@ const BorderOverlay = styled.span`
    - On hover of BaseButton, we scale Y to 0 (so it disappears).
    ---------------------------------------------------------------------------- */
 const HighlightOverlay = styled.span`
-  content: '';
+  content: "";
   position: absolute;
   top: 6px;
   left: -2px;
@@ -125,7 +125,7 @@ const IconWrapper = styled.span`
   transition: transform 0.5s cubic-bezier(0.65, 0, 0.076, 1);
 
   ${BaseButton}:hover & {
-    transform: translateX(calc(100% - (-4rem)));
+    transform: translateX(calc(100% - (-3.5rem)));
   }
 `;
 
@@ -142,18 +142,17 @@ const ButtonText = styled.span`
   right: 0;
   bottom: 0;
   padding: 0.75rem 0;
-  margin-left: 3rem; /* leave space for the icon’s resting position */
+  margin-left: 1rem; /* leave space for the icon’s resting position */
   color: #ffffff;
   font-weight: 700;
-  line-height: 1.6;
+  // line-height: 1.6;
   text-align: center;
-  text-transform: uppercase;
   z-index: 4;
   transition: color 0.45s cubic-bezier(0.65, 0, 0.076, 1),
-              letter-spacing 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+    letter-spacing 0.45s cubic-bezier(0.65, 0, 0.076, 1);
 
   ${BaseButton}:hover & {
-    color: #ffffff;      /* stays white, but you could lighten it more if you want */
+    color: #ffffff; /* stays white, but you could lighten it more if you want */
     letter-spacing: 0.5px;
   }
 `;
@@ -169,28 +168,29 @@ const ButtonText = styled.span`
  */
 const SlideButton = ({ text, icon, style, onClick, fullWidth, disabled }) => {
   return (
-    <BaseButton
-      onClick={onClick}
-      style={style || {}}
-      type="button"          /* avoids accidental form submits */
-      fullWidth={fullWidth}  /* custom prop we read in styled-component */
-      aria-label={text}    /* good practice for screen readers */
-      disabled={disabled}   /* disable button if needed */
-    >
-      {/* White border around the entire button */}
-      <BorderOverlay aria-hidden="true" />
+    <div onClick={onClick} className="relative">
+      <BaseButton
+        style={style || {}}
+        type="button" /* avoids accidental form submits */
+        fullWidth={fullWidth} /* custom prop we read in styled-component */
+        aria-label={text} /* good practice for screen readers */
+        disabled={disabled} /* disable button if needed */
+      >
+        {/* White border around the entire button */}
+        <BorderOverlay aria-hidden="true" />
 
-      {/* Dark overlay that “uncovers” on hover */}
-      <HighlightOverlay aria-hidden="true" />
+        {/* Dark overlay that “uncovers” on hover */}
+        <HighlightOverlay aria-hidden="true" />
 
-      {/* Black square that expands */}
-      <IconContainer aria-hidden="true">
-        {icon && <IconWrapper>{icon}</IconWrapper>}
-      </IconContainer>
+        {/* Black square that expands */}
+        <IconContainer aria-hidden="true">
+          {icon && <IconWrapper>{icon}</IconWrapper>}
+        </IconContainer>
 
-      {/* Button label */}
-      <ButtonText>{text}</ButtonText>
-    </BaseButton>
+        {/* Button label */}
+        <ButtonText>{text}</ButtonText>
+      </BaseButton>
+    </div>
   );
 };
 

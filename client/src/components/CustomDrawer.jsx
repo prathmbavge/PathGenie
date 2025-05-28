@@ -3,7 +3,6 @@ import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 // eslint-disable-next-line no-unused-vars
 import { AnimatePresence, motion } from "framer-motion";
 import DrawerContent from "./DrawerContent.jsx"; // Assuming this is a separate component
-
 const CustomDrawer = React.memo(
   ({ isOpen, onClose, content, nodeId, setLoading, children }) => {
     const panelGroupRef = useRef(null);
@@ -43,6 +42,7 @@ const CustomDrawer = React.memo(
             className="border-l-2 border-neon-blue/30 backdrop-blur-md transition-all"
           >
             <AnimatePresence>
+             
               {isOpen && (
                 <motion.div
                   initial={{ x: "100%", opacity: 0 }}
@@ -51,6 +51,7 @@ const CustomDrawer = React.memo(
                   transition={{ duration: 0.4, ease: "easeInOut" }}
                   className="h-full"
                 >
+                  
                   <DrawerContent
                     content={content}
                     onClose={handleClose}

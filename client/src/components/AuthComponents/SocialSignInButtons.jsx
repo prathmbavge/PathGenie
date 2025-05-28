@@ -2,49 +2,31 @@
 import React, { useCallback } from "react";
 import PropTypes from "prop-types";
 import SlideButton from "../Buttons/SlideButton";
-import { signIn } from "../../lib/auth-client";
-import GoogleIcon from "../Icons/GoogleIcon";
-import GitHubIcon from "../Icons/GitHubIcon";
-import constants from "../../../constants";
-
 import { FaGoogle, FaGithub } from "react-icons/fa";
-const SocialSignInButtons = ({ onError }) => {
+import { userSocialSignOn } from "../../api/authApi";
+const SocialSignInButtons = ({ setError }) => {
   const handleSocialSignIn = useCallback(
     async (provider) => {
-      try {
-        await signIn.social({
-          provider,
-          callbackURL: `${
-            constants.mode === "production" ? "" : `${constants.clientUrl}`
-          }/dashboard`,
-          newUserCallbackURL: `${
-            constants.mode === "production" ? "" : `${constants.clientUrl}`
-          }/profile`,
-        });
-        console.log(`Successfully signed in with ${provider}`);
-      } catch (error) {
-        console.error(`${provider} sign-in error:`, error);
-        onError(`Failed to sign in with ${provider}. Please try again.`);
-      }
+      await userSocialSignOn(provider, setError);
     },
-    [onError]
+    [setError]
   );
 
   return (
-    <div className="flex justify-center space-x-4 mb-6 pb-4 border-b border-gray-300 flex-wrap md:space-x-10">
+    <div className="flex justify-center space-x-4  flex-wrap md:space-x-10">
       <SlideButton
         text="Google"
-        icon={<GoogleIcon />}
+        icon={<FaGoogle />}
         onClick={() => handleSocialSignIn("google")}
         fullWidth={true}
-        className="md:w-1/2"
+        style={{ width: "100vw", maxWidth: "200px" }}
       />
       <SlideButton
         text="GitHub"
-        icon={<GitHubIcon />}
+        icon={<FaGithub />}
         onClick={() => handleSocialSignIn("github")}
         fullWidth={true}
-        className="md:w-1/2"
+        style={{ width: "100vw", maxWidth: "200px" }}
       />
     </div>
   );

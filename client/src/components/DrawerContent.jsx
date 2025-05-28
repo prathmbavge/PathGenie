@@ -31,6 +31,7 @@ import { Markmap } from "markmap-view";
 import { RiMindMap } from "react-icons/ri";
 import { showSuccessToast } from "../../utils/toastUtils.js";
 
+
 const MarkmapViewer = ({ markdown }) => {
   const svgRef = useRef(null);
   const markmapInstanceRef = useRef(null);
@@ -88,14 +89,14 @@ const DrawerContent = memo(({ content, onClose, setLoading, nodeId }) => {
             <select
               value={downloadFormat}
               onChange={(e) => setDownloadFormat(e.target.value)}
-              className="bg-black text-white px-3 py-2 border border-neon-blue/30"
+              className="bg-black text-white px-3 py-2 border border-neon-blue/30 cursor-pointer"
             >
               <option value="pdf">PDF</option>
               <option value="doc">DOC</option>
             </select>
             <button
               onClick={handleDownload}
-              className="flex items-center space-x-2 px-3 py-2 text-neon-blue backdrop-blur-lg transition-all hover:border-neon-blue hover:bg-neon-blue/20 border-1"
+              className="flex items-center space-x-2 px-3 py-2 text-neon-blue backdrop-blur-lg transition-all hover:border-neon-blue hover:bg-neon-blue/20 border-1 cursor-pointer"
             >
               <FiDownload className="h-5 w-5" />
               <span>Download Resources</span>
@@ -103,7 +104,7 @@ const DrawerContent = memo(({ content, onClose, setLoading, nodeId }) => {
           </div>
           <button
             onClick={onClose}
-            className="flex items-center space-x-2 px-1 py-2 text-neon-pink backdrop-blur-lg transition-all hover:border-neon-pink hover:bg-neon-pink/20 border-1"
+            className="flex items-center space-x-2 px-1 py-2 text-neon-pink backdrop-blur-lg transition-all hover:border-neon-pink hover:bg-neon-pink/20 border-1 cursor-pointer"
           >
             <FiX className="h-5 w-5" />
             <span>Close</span>
@@ -312,8 +313,8 @@ const DrawerContent = memo(({ content, onClose, setLoading, nodeId }) => {
               </div>
             </AccordionSection>
           )}
-
-          {content.images?.length > 0 && (
+           //Hiding Images due to perplexity cannot provide image URLs
+          {/* {content.images?.length > 0 && (
             <AccordionSection
               title="Images"
               icon={<FiImage className="h-5 w-5 text-neon-blue" />}
@@ -344,7 +345,7 @@ const DrawerContent = memo(({ content, onClose, setLoading, nodeId }) => {
                 Full Screen <FaExpand className="inline-block h-5 w-5" />
               </button>
             </AccordionSection>
-          )}
+          )} */}
 
           {content.videos?.length > 0 && (
             <AccordionSection
@@ -480,7 +481,7 @@ const DrawerContent = memo(({ content, onClose, setLoading, nodeId }) => {
                 ))}
               </div>
             )}
-            {fullScreenContent.type === "images" && (
+            {/* {fullScreenContent.type === "images" && (
               <div className="grid grid-cols-2 gap-4 h-[80vh] w-full overflow-y-auto">
                 {content.images.map((image, index) => (
                   <motion.div
@@ -498,7 +499,7 @@ const DrawerContent = memo(({ content, onClose, setLoading, nodeId }) => {
                   </motion.div>
                 ))}
               </div>
-            )}
+            )} */}
             {fullScreenContent.type === "videos" && (
               <div className=" w-full h-auto ">
                 {content.videos.map((video, index) => (

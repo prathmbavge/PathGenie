@@ -1,5 +1,6 @@
 import Mindmap from "../models/MindMap.model.js";
 import Node from "../models/Node.model.js";
+import Profile from "../models/Profile.model.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import mongoose from "mongoose";
 import ApiError from "../utils/ApiError.js";
@@ -83,8 +84,21 @@ export default {
         if (!user || !user.id) throw new ApiError(401, "User not authenticated");
 
         try {
-            const userProfile = { profession: user.profession || 'unknown', experienceYears: user.experienceYears || 0 };
-            const { nodes: aiNodes, tags : aiTags } = await generateBasicMindmap(title, userProfile);
+            //remove _id and userID
+            const userProfile = await Profile.findOne({ userId: user.id }).select('-_id -userId -createdAt -updatedAt');
+            //convert whole object to string represenation to give to ai
+            userProfile.bio = userProfile.bio.toString();
+            userProfile.contentTypes = userProfile.contentTypes.toString();
+            userProfile.language = userProfile.language.toString();
+            userProfile.background = userProfile.background.toString();
+            userProfile.interests = userProfile.interests.toString();
+            userProfile.learningGoals = userProfile.learningGoals.toString();
+            userProfile.learningStyle = userProfile.learningStyle.toString();
+            userProfile.knowledgeLevel = userProfile.knowledgeLevel.toString();
+
+
+            // console.log("User profile:", userProfile);
+            const { nodes: aiNodes, tags: aiTags } = await generateBasicMindmap(title, userProfile);
             if (!aiNodes || aiNodes.length === 0) {
                 throw new ApiError(500, "Failed to generate mindmap structure");
             }
@@ -149,17 +163,17 @@ export default {
         const { mindmapId } = req.params;
         const { user } = req;
 
-        // const mindmap = await Mindmap.findById(mindmapId).populate("rootNode");
+        const mindmap = await Mindmap.findById(mindmapId).populate("rootNode");
         // if (!mindmap || mindmap.owner.toString() !== user.id.toString()) {
         //     throw new ApiError(401, "Unauthorized for Mindmap!");
         // }
-
+        const ownerId = mindmap.owner;
         // Fetch nodes using lean query (much faster for read-only ops)
         const nodes = await Node.find({ mindmapId }).sort({ path: 1 }).lean();
-
+ 
         const { nodes: updatedNodes, edges } = generateEdges(nodes);
         // console.log("Updated nodes:", updatedNodes);
-        res.status(200).json(new ApiResponse(200, {  nodes: updatedNodes, edges }, "Mindmap fetched"));
+        res.status(200).json(new ApiResponse(200, { nodes: updatedNodes, edges, ownerId }, "Mindmap fetched"));
     }),
 
     expandNode: asyncHandler(async (req, res) => {
@@ -237,7 +251,6 @@ export default {
                 session.endSession();
                 throw error;
             }
-
             const { nodes: updatedNodes, edges } = generateEdges(nodeDocs);
             res.status(200).json(new ApiResponse(200, { newNodes: updatedNodes, edges }, "Node expanded"));
         } catch (error) {
@@ -253,7 +266,7 @@ export default {
         if (!mindmapId || !nodeId) throw new ApiError(400, "Mindmap ID and Node ID are required");
 
         const mindmap = await Mindmap.findById(mindmapId);
-        
+
 
         const node = await Node.findById(nodeId);
         if (!node || node.mindmapId.toString() !== mindmapId) {
@@ -282,7 +295,7 @@ export default {
 
         try {
             const userProfile = { profession: user.profession || 'unknown', experienceYears: user.experienceYears || 0 };
-            
+
             const { resources } = await gatherResources(node.data.label + '-' + node.data.shortDesc, mindmap.title, userProfile);
             node.resources = resources;
             await node.save();

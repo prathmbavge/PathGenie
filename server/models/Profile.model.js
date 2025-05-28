@@ -6,11 +6,39 @@ const profileSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
-  bio: {
+  language: {
     type: String,
     default: "",
   },
-  avatar: {
+  background: {
+    type: String,
+    default: "",
+  },
+  interests: {
+    type: String,
+    default: "",
+  },
+  learningGoals: {
+    type: String,
+    default: "",
+  },
+  learningStyle: {
+    type: String,
+    default: "",
+  },
+  knowledgeLevel: {
+    type: String,
+    default: "",
+  },
+  contentTypes: {
+    type: String,
+    default: "",
+  },
+  timeCommitment: {
+    type: String,
+    default: "",
+  },
+  bio: {
     type: String,
     default: "",
   },
@@ -25,3 +53,4 @@ const profileSchema = new mongoose.Schema({
 });
 
 export default mongoose.model("Profile", profileSchema);
+

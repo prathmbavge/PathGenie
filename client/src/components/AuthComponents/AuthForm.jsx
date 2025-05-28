@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import GradientInput from "../components/Input/GradientInput";
-import SlideButton from "../components/Buttons/SlideButton";
-import { signIn, signUp } from "../lib/auth-client";
-import constants from "../../constants";
+import GradientInput from "../Input/GradientInput";
+import SlideButton from "../Buttons/SlideButton";
+import { userLogin, userRegister } from "../../api/authApi.js";
+import { FaUserPlus } from "react-icons/fa";
+import { GrLogin } from "react-icons/gr";
 
 const AuthForm = ({ isLogin = false }) => {
   const [formData, setFormData] = useState({
@@ -54,57 +55,15 @@ const AuthForm = ({ isLogin = false }) => {
 
     setIsSubmitting(true);
     try {
-      if (isLogin) {
-        await signIn.email(
-          {
-            email: formData.email,
-            password: formData.password,
-            // callbackURL: constants.DASHBOARD_URL,
-            callbackURL: "http://localhost:5173/dashboard"
-          },
-          {
-            onError: (error) => {
-              setErrors((prev) => ({
-                ...prev,
-                general: error.error.message,
-              }));
-            },
-          }
-        );
-        console.log("User logged in successfully:", { email: formData.email });
-      } else {
-        await signUp.email(
-          {
-            email: formData.email,
-            password: formData.password,
-            name: formData.username,
-            // callbackURL: constants.DASHBOARD_URL,
-            callbackURL: "http://localhost:5173/dashboard"
-          },
-          {
-            onError: (error) => {
-              setErrors((prev) => ({
-                ...prev,
-                general: error.error.message,
-              }));
-            },
-          }
-        );
-        console.log("Trying User registration:", {
-          email: formData.email,
-          username: formData.username,
-        });
-      }
+      const authAction = isLogin ? userLogin : userRegister;
+      await authAction(formData, setErrors);
+      // Handle successful login/registration (e.g., navigate to dashboard)
+      console.log(`${isLogin ? "Login" : "Registration"} successful`);
     } catch (error) {
-      console.error(
-        `${isLogin ? "Login" : "Registration"} failed:`,
-        error.message
-      );
+      console.error(`${isLogin ? "Login" : "Registration"} error:`, error);
       setErrors((prev) => ({
         ...prev,
-        general: `${
-          isLogin ? "Login" : "Registration"
-        } failed. Please try again.`,
+        general: error.message || "An unexpected error occurred.",
       }));
     } finally {
       setIsSubmitting(false);
@@ -112,7 +71,7 @@ const AuthForm = ({ isLogin = false }) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-md mx-auto p-3 rounded-lg shadow-md">
       {isLogin ? (
         <>
           <InputField
@@ -200,12 +159,12 @@ const AuthForm = ({ isLogin = false }) => {
         <div className="text-red-500 text-sm text-center">{errors.general}</div>
       )}
 
-      <div className="text-center border-b-2 border-gray-300 pb-3 border-x-2">
+      <div className="text-center border-b-2 pb-3">
         <SlideButton
           type="button"
           text={isLogin ? "Login" : "Register"}
-          icon={isLogin ? <LoginIcon /> : <ArrowIcon />}
-          style={{ width: "70%" }}
+          icon={isLogin ? <GrLogin /> : <FaUserPlus />}
+          fullWidth={true}
           disabled={isSubmitting}
           onClick={handleSubmit}
         />
@@ -244,48 +203,13 @@ const InputField = ({
       type={type}
       value={value}
       onChange={onChange}
-      placeholder={placeholder}
-      className="w-full"
+      placeholders={[`${placeholder}`]}
+      className="w-full mt-1"
       required={required}
+      duration={10000}
     />
     {error && <div className="text-red-500 text-xs mt-1">{error}</div>}
   </div>
-);
-
-const LoginIcon = () => (
-  <svg
-    className="w-6 h-6 text-gray-800 dark:text-white"
-    aria-hidden="true"
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 18 16"
-  >
-    <path
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      d="M1 8h11m0 0L8 4m4 4-4 4m4-11h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-3"
-    />
-  </svg>
-);
-
-const ArrowIcon = () => (
-  <svg
-    className="w-6 h-6 text-gray-800 dark:text-white"
-    aria-hidden="true"
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 10 16"
-  >
-    <path
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      d="m2.707 14.293 5.586-5.586a1 1 0 0 0 0-1.414L2.707 1.707A1 1 0 0 0 1 2.414v11.172a1 1 0 0 0 1.707.707Z"
-    />
-  </svg>
 );
 
 export default AuthForm;

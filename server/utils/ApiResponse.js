@@ -2,15 +2,15 @@ export default class ApiResponse {
   /**
    * Constructor for ApiResponse class.
    *
-   * @param {number} statusCode - The status code of the response.
+   * @param {number} status - The status code of the response.
    * @param {any} data - The data to be included in the response.
    * @param {string} [message='Success'] - The message associated with the response.
    */
-  constructor(statusCode, data, message = 'Success') {
-    this.statusCode = statusCode;
+  constructor(status, data, message = 'Success') {
+    this.status = status;
     this.data = data;
     this.message = message;
-    this.success = statusCode < 400;
+    this.success = status < 400;
   }
 }
 

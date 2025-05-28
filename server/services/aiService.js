@@ -2,43 +2,203 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const fetchPerplexityData = async (type, input) => {
-  const API_KEY = process.env.PERPLEXITY_API_KEY; // Ensure this is set in your environment
+const fetchPerplexityData = async (type, input, mainTopic, userProfile = {}) => {
+  const API_KEY = process.env.PERPLEXITY_API_KEY;
   const BASE_URL = 'https://api.perplexity.ai';
+
+  // // Extract user profile details
+  // const { profession = 'unknown', experienceYears = 0 } = userProfile;
 
   let systemPrompt;
   switch (type) {
     case 'basicMindmap':
       systemPrompt = `
-Generate an initial mindmap structure for the given topic in JSON format. The JSON should have a "nodes" array, where each node is an object with:
-- "data": { "label": "node label" }
-- "position": { "x": number, "y": number }
-- "parentIndex": number or null
-The root node should have parentIndex: null, and other nodes should have parentIndex pointing to the index of their parent in the nodes array.
-Provide at least 10 nodes with a hierarchical structure, including multiple levels.
-Assign positions such that nodes are arranged in a tree layout, with the root at (0,0), level 1 at y=100, level 2 at y=200, etc., and spaced horizontally by 100 units. The response should be only valid JSON object(**No Other text**).
+**System Instructions for Generating a Basic Mindmap**
+
+You are an AI assistant **with web search capabilities**, tasked with creating a personalized learning mindmap/roadmap for a **${userProfile} (consider this only if valid input)**. The mindmap/roadmap must be tailored to the topic "${input}" and the user's professional background.
+
+**Output Requirements:**
+- Generate a hierarchical mindmap as a **strict matching JSON tree** with **exactly 6 nodes and more 2 sub nodes for each**, including multiple levels.
+- The response must be a **valid JSON object** with a single key "nodes", containing an array of node objects.
+- Each node object must have:
+  - "data": { "label": "string", "shortDesc": "string" }
+  - "parentIndex": number or null (null for the root node)
+- The "label" must be **unique across all nodes**.
+- The "shortDesc" must be concise and related to topic (10-20 words).
+
+**Content Guidelines:**
+- For < 2 years experience: Focus on **introductory concepts**.
+- For 2-5 years: Include **intermediate topics**.
+- For > 5 years: Add **advanced or specialized areas**.
+- Ensure content is **relevant** to the user's profession and **accurate**.
+
+**Important Notes:**
+- **Do not include any text outside the JSON object.**
+- **Avoid duplicate node labels.**
+- **Use web search to verify information** and ensure accuracy.
+- **Do not hallucinate or invent content.**
+
+**Example Output:** (do not add any extra text like json annotaion)
+{
+  "nodes": [
+    {"data": {"label": "Root Topic", "shortDesc": "Overview of the topic"}, "parentIndex": null},
+    {"data": {"label": "Child 1", "shortDesc": "Basic concept"}, "parentIndex": 0}
+  ],
+  "tags": ["tags related to the topic seperated by commas (4-5 tags)"]
+}
+**Final Instruction:** Your entire response must be the **JSON object only**. No greetings or additional text.
 `;
       break;
     case 'subtopics':
       systemPrompt = `
-Generate subtopics for the given parent node label in JSON format. The JSON should have a "nodes" array, where each node is an object with:
-- "data": { "label": "node label" }
-- "position": { "x": number, "y": number }
-- "parentIndex": number or null
-The first node should have parentIndex: null (it will connect to the parent), and subsequent nodes can have parentIndex pointing to the index of their parent in the nodes array.
-Provide 2-3 subtopics.
-Assign positions such that nodes are positioned below the parent, e.g., y=150 for the first node, y=250 for others, with x offsets of 100 units. The response should be only valid JSON object(**No Other text**).
+**System Instructions for Generating Subtopics**
+
+You are an AI assistant **with web search capabilities**, helping a user with **${userProfile}**. expand their learning mindmap on "${input}". Generate **2-5 subtopics considering given topic and main-topic is ${mainTopic}**.
+
+**Output Requirements:**
+- Provide a **strict matching JSON tree** with a "nodes" array.
+- Each node must have:
+  - "data": { "label": "string", "shortDesc": "string" }
+  - "parentIndex": number or null (null for the first node)
+- The first node must have **parentIndex: null**; others may point to their parent's index.
+
+**Content Guidelines:**
+- Tailor subtopics to the user's **profession** and **experience level**.
+- Focus on **less common or advanced aspects** to ensure uniqueness.
+
+**Important Notes:**
+- **Do not include any text outside the JSON object.**
+- **Ensure subtopics are unique and relevant. (do not repeat input topic itself)**
+- **Use web search to verify information.**
+- **Do not hallucinate or repeat typical topics.**
+
+**Example Output:**
+{
+  "nodes": [
+    {"data": {"label": "Subtopic 1", "shortDesc": "Advanced aspect"}, "parentIndex": null},
+    {"data": {"label": "Sub-subtopic 1.1", "shortDesc": "Detail"}, "parentIndex": 0}
+  ]
+}
+**Final Instruction:** Your entire response must be the **JSON object only**. No additional text.
 `;
       break;
     case 'resources':
       systemPrompt = `
-Generate learning resources for the given topic in JSON format. The JSON should have a "resources" array, where each resource is an object with:
-- "type": ['links', 'images', 'markdown','videoUrls', 'note']
-- "url": array of strings (for "links" and "images" and "videoUrls" types)
-- "description": string for the resource description
-- "markdown": string (for "markdown" type, provide detailed markdown content with headings, lists, and code blocks)
-Provide at least (min) one link, one note, one image and one video and one detailed markdown resource for the topic.
-Ensure the markdown is properly formatted for JavaScript template literals. The response should be only valid JSON object(**No any pre or post Other text**).
+**System Instructions for Generating Learning Resources**
+
+You are an Personalize AI assistant with web search capabilities, helping a user with **${userProfile}** tasked with providing personalized learning resources for a user who may be a student or professional from any sector. The subtopic topic is ${input} and main topic is ${mainTopic}.
+
+**Output Requirements:**
+
+- Provide a JSON object with a "resources" key containing:
+  - "links": An array of objects, each with "url", "title", and "description". Include educational websites, official documentation, reputable blogs, and **project repositories** (e.g., GitHub links), blogs, and other educational resources.
+  - "images": An array of objects, each with "url", "alt", and "caption". URLs must be direct links to images.
+  - "videos": An array of objects, each with "url", "title", and "description". Prefer YouTube videos or other educational video platforms.
+  - "notes": An array of objects, each with "content". Notes should be concise summaries or key points.
+  - "markdown": An array of objects, each with "content". Markdown must be **detailed,topic realted, well-structured, and include visuals like tables**. It should support **GitHub Flavored Markdown (GFM)** features such as headings, lists, code blocks, task lists, and footnotes. Include **project links** and other relevant web materials where appropriate.
+ - "diagrams": An array containing exactly one object with:
+    -- "content": A string representing a diagram in markmap-compatible text format (e.g., Markdown-like hierarchical syntax). The diagram must relate to the topic and include links and related points to deepen understanding.
+    -- "format": Must be "markmap".
+  - "codeSnippets": An array of objects, each with "content" and "language". Include relevant code examples where applicable.
+
+- Ensure all resources are **accurate, up-to-date, and directly relevant** to the topic.
+- Tailor the resources to the user's **profession** (if specified) and **experience level**:
+  - For students or users with < 2 years of experience: Focus on **introductory and foundational resources**.
+  - For professionals with 2-5 years of experience: Include **intermediate topics** and practical applications.
+  - For experts with > 5 years of experience: Provide **advanced and specialized materials**.
+- Make sure the resources are **accessible and, if possible, free**.
+- Include a variety of resource types to cater to different learning preferences (e.g., visual learners, readers, etc.).
+
+**Important Notes:**
+
+- Do not include any text outside the JSON object.
+- Use web search to verify all resources and ensure they are real, working, and relevant.
+- Do not hallucinate or assume URLs; they must be actual working links.
+- Ensure markdown content is **detailed and includes visuals like tables** where appropriate.
+- Tailor the content to be understandable by a **broad audience**, including students and professionals from any sector.
+- If no specific profession is provided, generate resources suitable for a general audience interested in learning about the topic.
+
+**Example Output:**
+{
+  "resources": {
+    "links": [
+      {
+        "url": "...",
+        "title": "Resource 1 Title",
+        "description": "A brief description of Resource 1."
+      }
+    ],
+    "images": [
+      {
+        "url": "....",
+        "alt": "Image description",
+        "caption": "Caption for the image"
+      }
+    ],
+    "videos": [
+      {
+        "url": "....",
+        "title": "Video Title",
+        "description": "A brief description of the video."
+      }
+    ],
+    "notes": [
+      {
+        "content": "Key point or summary related to the topic."
+      }
+    ],
+    "markdown": [
+      {
+        "content": "# Markdown Content\n\n## Key Points\n- Point 1\n- Point 2\n\n[Link to more resources](https://example.com)"
+
+      }
+    ],
+    "diagrams": [
+      {
+        "content": "# Topic Overview\n- Main Point\n  - Subpoint 1\n  - Subpoint 2",
+        "format": "markmap"
+      }
+    ],
+    "codeSnippets": [
+      {
+        "content": "// if required.. Example code snippet",
+        "language": "..."
+      }
+    ]
+  }
+}
+`;
+      break;
+    case 'pdfSummary':
+      systemPrompt = `
+**System Instructions for Summarizing PDF Content**
+
+You are an AI assistant **with web search capabilities**, summarizing PDF content for a **${userProfile}** with **${experienceYears} years of experience**. The input is the text content of a PDF about "${input}".
+
+**Output Requirements:**
+- Generate a **strict matching JSON tree** with a "nodes" array of **5-7 nodes**.
+- Each node must have:
+  - "data": { "label": "string", "shortDesc": "string" }
+  - "parentIndex": number or null (null for the root node)
+
+**Content Guidelines:**
+- Tailor to the user's **profession** and **experience level**.
+- Extract **key points** from the input text only.
+
+**Important Notes:**
+- **Do not include any text outside the JSON object.**
+- **Avoid duplicate nodes.**
+- **Base summary solely on input text; no external info.**
+- **Do not hallucinate.**
+
+**Example Output:**
+{
+  "nodes": [
+    {"data": {"label": "Main Idea", "shortDesc": "Core concept"}, "parentIndex": null},
+    {"data": {"label": "Point 1", "shortDesc": "Detail"}, "parentIndex": 0}
+  ]
+}
+**Final Instruction:** Your entire response must be the **JSON object only**. No additional text.
 `;
       break;
     default:
@@ -88,21 +248,25 @@ Ensure the markdown is properly formatted for JavaScript template literals. The 
   }
 };
 
-export const generateBasicMindmap = async (title) => {
-  const data = await fetchPerplexityData('basicMindmap', title);
+export const generateBasicMindmap = async (title, userProfile) => {
+  const data = await fetchPerplexityData('basicMindmap', title, title, userProfile);
   return data; // Returns { nodes: [...] }
 };
 
-export const generateSubtopics = async (parentLabel) => {
-  const data = await fetchPerplexityData('subtopics', parentLabel);
+export const generateSubtopics = async (parentLabel, mainTopic, userProfile) => {
+  const data = await fetchPerplexityData('subtopics', parentLabel, mainTopic, userProfile);
   return data; // Returns { nodes: [...] }
 };
 
-export const gatherResources = async (label) => {
-  const data = await fetchPerplexityData('resources', label);
-  return data; // Returns { resources: [...] }
+export const gatherResources = async (label, mainTopic, userProfile) => {
+  const data = await fetchPerplexityData('resources', label, mainTopic, userProfile);
+  return data; // Returns { resources: { links: [], images: [], ... } }
 };
 
+// export const summarizePDF = async (pdfContent, mainTopic, userProfile) => {
+//   const data = await fetchPerplexityData('pdfSummary', pdfContent, mainTopic, userProfile);
+//   return data; // Returns { nodes: [...] }
+// };
 
 
 // const generateBasicMindmap = async (title) => {

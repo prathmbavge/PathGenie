@@ -17,7 +17,7 @@ const transporter = nodemailer.createTransport({
  * @param {boolean} isPassword - Indicates whether the email is for password reset or not.
  * @return {Promise<void>} A promise that resolves when the email is sent successfully.
  */
-const sendVerificationEmail = (email, token, isPassword) => {
+const sendVerificationEmail = (email, isPassword, url) => {
   const htmlVerification = `<!DOCTYPE html>
     <html lang="en">
     <head>
@@ -83,11 +83,11 @@ const sendVerificationEmail = (email, token, isPassword) => {
           <h1>Email Verification</h1>
         </div>
         <div class="content">
-          <p>Hello there!</p>
+          <p>Hello there, Greetings from PathGenie!</p>
           <p>Thank you for registering with us. Please verify your email by clicking the button below:</p>
-          <a href="${constants.clientUrl}/verify-email?token=${token}" class="button">Verify Email</a>
+          <a href="${url}" class="button">Verify Email</a>
           <p>If the button above doesn't work, please copy and paste the following link into your web browser:</p>
-          <p>${constants.clientUrl}/verify-email?token=${token}</p>
+          <p>${url}</p>
         </div>
         <div class="footer">
           <p>Thank you!</p>

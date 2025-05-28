@@ -30,6 +30,7 @@ const BatteryCard = styled.div`
   box-shadow:
     0 15px 30px rgba(0, 0, 0, 0.6),
     inset 0 0 10px rgba(80, 100, 200, 0.15);
+   
   overflow: hidden;
   z-index: 1;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -39,7 +40,7 @@ const BatteryCard = styled.div`
     box-shadow:
       0 20px 40px rgba(0, 0, 0, 0.8),
       inset 0 0 15px rgba(80, 100, 200, 0.25);
-    
+    filter: brightness(0.5);
     .diagonal {
       opacity: 0.8;
     }

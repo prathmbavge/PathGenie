@@ -1,10 +1,12 @@
+// src/pages/Login.jsx
 import React, { useState } from "react";
 import TrueFocus from "../components/Animation/TrueFocus";
 import { useNavigate } from "react-router-dom";
 import PageLayout from "./PageLayout";
-import SocialSignInButtons from "../components/SocialSignInButtons";
-import AuthForm from "../components/AuthForm";
+import SocialSignInButtons from "../components/AuthComponents/SocialSignInButtons";
+import AuthForm from "../components/AuthComponents/AuthForm";
 import SlideButton from "../components/Buttons/SlideButton";
+import { FaUserPlus } from "react-icons/fa";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -12,52 +14,48 @@ const Login = () => {
 
   return (
     <PageLayout>
+      {/* Page Heading */}
       <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-10 text-center">
         <TrueFocus
-          sentence="Login Here;)"
+          sentence="Login Here"
           blurAmount={6}
-          borderColor="white"
+          borderColor="orange"
           glowColor="red"
-          manualMode={true}
           animationDuration={0.5}
         />
       </h2>
-      <SocialSignInButtons onError={setSocialError} />
+
+      {/* Social Sign-In Buttons */}
+      <SocialSignInButtons setError={setSocialError} />
       {socialError && (
-        <div className="text-red-500 text-sm text-center mb-4">{socialError}</div>
+        <div className="text-red-500 text-sm text-center mb-4">
+          {socialError}
+        </div>
       )}
-      <div className="text-center">
-      <AuthForm isLogin />
+
+      {/* Email/Password Login Form */}
+      <div className="flex justify-center mb-6">
+        <div className="w-full max-w-md">
+          <AuthForm isLogin />
+        </div>
       </div>
-      <p className="mt-2 text-center text-sm text-white dark:text-white">
-        Don’t have an account? <br />
-        <SlideButton
-          text="Register"
-          icon={<ArrowIcon />}
-          style={{ width: "70%", marginTop: "0.5em" }}
-          onClick={() => navigate("/register")}
-        />
-      </p>
+
+      {/* Register Link */}
+      <div className="mt-2 text-center text-sm text-gray-700 dark:text-gray-300">
+        Don’t have an account?
+        <div className="mt-2 flex justify-center">
+          <div className="w-7/12 max-w-xs">
+            <SlideButton
+              text="Register"
+              icon={<FaUserPlus />}
+              onClick={() => navigate("/register")}
+              fullWidth={true}
+            />
+          </div>
+        </div>
+      </div>
     </PageLayout>
   );
 };
-
-const ArrowIcon = () => (
-  <svg
-    className="w-6 h-6 text-gray-800 dark:text-white"
-    aria-hidden="true"
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 10 16"
-  >
-    <path
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      d="m2.707 14.293 5.586-5.586a1 1 0 0 0 0-1.414L2.707 1.707A1 1 0 0 0 1 2.414v11.172a1 1 0 0 0 1.707.707Z"
-    />
-  </svg>
-);
 
 export default Login;

@@ -1,170 +1,159 @@
-import React from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-  useLocation,
-} from "react-router-dom";
+// src/App.jsx
+import React, { lazy, Suspense, useMemo } from "react";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import { useSession } from "./lib/auth-client";
 import Pattern from "./components/Pattern.jsx";
-import Login from "./Pages/Login.jsx";
-import Register from "./Pages/Register.jsx";
-import Dashboard from "./Pages/Dashboard.jsx";
-import Profile from "./Pages/Profile.jsx";
-import Navbar from "./components/Navbar.jsx";
-import LandingPage from "./Pages/LandingPage.jsx";
-import MindMapPage from "./Pages/MindMapPage.jsx";
+import Navbar from "./components/Navbar/Navbar.jsx";
+import { useSession } from "./lib/auth-client";
+import { showErrorToast } from "../utils/toastUtils";
 
-// PrivateRoute component to protect routes
-const PrivateRoute = ({ children }) => {
-  const { data: session, isPending, error } = useSession();
+// ------------------------
+// Lazy-loaded Pages
+// ------------------------
+const LandingPage = lazy(() => import("./Pages/LandingPage.jsx"));
+const Login = lazy(() => import("./Pages/Login.jsx"));
+const Register = lazy(() => import("./Pages/Register.jsx"));
+const Dashboard = lazy(() => import("./Pages/Dashboard.jsx"));
+const Profile = lazy(() => import("./Pages/Profile.jsx"));
+const MindMapPage = lazy(() => import("./Pages/MindMapPage.jsx"));
+
+// ------------------------
+// Route Guards
+// ------------------------
+
+// While session is being fetched, show a loader
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="shadow-lg p-8 sm:p-12 w-full max-w-md">
+        <p className="text-center text-white">Calling Genie ;)</p>
+      </div>
+    </div>
+  );
+}
+
+// Protect private routes: if an error occurs or no session, redirect to /login
+function PrivateRoute({ children }) {
+  const { isPending, error, data: session } = useSession();
   const location = useLocation();
 
-  // Handle loading state
   if (isPending) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="shadow-lg p-8 sm:p-12 w-full max-w-md">
-          <p className="text-center text-gray-900 dark:text-white">
-            Loading...
-          </p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
-  // Handle error state
-  if (error) {
-    console.error("Session fetch error:", error.message);
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="shadow-lg p-8 sm:p-12 w-full max-w-md">
-          <p className="text-center text-red-500">
-            Failed to load session. Please try again.
-          </p>
-          <div className="mt-4 text-center">
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Retry
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // If no session, redirect to login with the intended destination
-  if (!session) {
+  if (error || !session) {
+    // Show error toast if there's an error
+    if (error) {
+      showErrorToast("Session expired or not found. Please log in.");
+    }
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Render the protected route
   return children;
-};
+}
 
-// PublicRoute to prevent logged-in users from accessing login/register
-const PublicRoute = ({ children }) => {
-  const { data: session, isPending } = useSession();
+// Prevent signed-in users from accessing login/register pages
+function PublicRoute({ children }) {
+  const { data: session } = useSession();
 
-  if (isPending) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="shadow-lg p-8 sm:p-12 w-full max-w-md">
-          <p className="text-center text-gray-900 dark:text-white">
-            Loading...
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // If user is logged in, redirect to dashboard
   if (session) {
     return <Navigate to="/dashboard" replace />;
   }
 
   return children;
-};
+}
 
-function App() {
+export default function App() {
+  const location = useLocation();
+
+  // List of paths where Navbar should be hidden
+  const hiddenNavbarPaths = useMemo(() => ["/login", "/register"], []);
+
+  // Check if current route starts with "/mindmap/"
+  const isMindMapPath = useMemo(
+    () => location.pathname.startsWith("/mindmap/"),
+    [location.pathname]
+  );
+
+  // Only show Navbar when user is signed in AND not on a hidden path
+  const shouldShowNavbar = useMemo(() => {
+    return !hiddenNavbarPaths.includes(location.pathname) && !isMindMapPath;
+  }, [location.pathname, hiddenNavbarPaths, isMindMapPath]);
+
   return (
+    // Wrap everything under Pattern (theme/layout wrapper)
     <Pattern>
-      <Router>
-        {/* Navbar component can be included here if needed */}
-        {/* {window.location.pathname !== "/login" &&
-          window.location.pathname !== "/register" &&
-          window.location.pathname !== "/mindmap" && <Navbar />} */}
-        <Routes>
-          {/* Public Routes */}
-          <Route
-            path="/login"
-            element={
-              <PublicRoute>
-                <Login />
-              </PublicRoute>
-            }
-          />
-          <Route
-            path="/register"
-            element={
-              <PublicRoute>
-                <Register />
-              </PublicRoute>
-            }
-          />
-          <Route path="/" element={<LandingPage />} />
+      <div className="min-h-screen max-w-screen">
+        {/* Conditionally render Navbar */}
+        {shouldShowNavbar && <Navbar />}
 
-          {/* Protected Routes */}
-          <Route
-            path="/dashboard"
-            element={
-              <PrivateRoute>
-                <Dashboard />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <PrivateRoute>
-                <Profile />
-              </PrivateRoute>
-            }
-          />
-         <Route path="/mindmap/:mindmapId" element={<MindMapPage />} />
-        </Routes>
-      </Router>
-      <Toaster
-        /**
-         * Configures the Toaster component with custom options.
-         *
-         * @prop {string} position - The position of the toasts on the screen.
-         * @prop {object} toastOptions - The options for the toasts.
-         * @prop {number} toastOptions.duration - The duration of the toasts in milliseconds.
-         * @prop {object} toastOptions.style - The style options for the toasts.
-         * @prop {string} toastOptions.style.fontWeight - The font weight of the toast text.
-         * @prop {string} toastOptions.style.fontSize - The font size of the toast text.
-         * @prop {string} toastOptions.style.fontFamily - The font family of the toast text.
-         * @return {ReactElement} The rendered Toaster component.
-         */
-        position="top-center"
-        toastOptions={{
-          duration: 3000,
-          style: {
-            fontWeight: "bold",
-            fontSize: "1.5rem",
-            fontFamily: "times new roman",
-            backgroundColor: "black",
-            color: "white",
-          },
-        }}
-      />
+        {/* Wrap routes inside Suspense to support lazy loading */}
+        <Suspense fallback={<LoadingScreen />}>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<LandingPage />} />
+            <Route
+              path="/login"
+              element={
+                <PublicRoute>
+                  <Login />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <PublicRoute>
+                  <Register />
+                </PublicRoute>
+              }
+            />
+
+            {/* Private Routes */}
+            <Route
+              path="/dashboard"
+              element={
+                <PrivateRoute>
+                  <Dashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <PrivateRoute>
+                  <Profile />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/mindmap/:mindmapId"
+              element={
+                <PrivateRoute>
+                  <MindMapPage />
+                </PrivateRoute>
+              }
+            />
+
+            {/* 404 Fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
+
+        {/* Global toast notifications */}
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            style: {
+              fontSize: "1.2rem",
+              fontFamily: "Times New Roman, serif",
+              backgroundColor: "rgba(0, 0, 0, 0.5)",
+              color: "#fff",
+              borderRadius: "0px",
+            },
+          }}
+        />
+      </div>
     </Pattern>
   );
 }
-
-export default App;

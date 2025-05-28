@@ -1,223 +1,344 @@
-import { Mindmap, Node } from '../models/MindMap.model.js';
-import asyncHandler from '../utils/asyncHandler.js';
-import mongoose from 'mongoose';
-import ApiError from '../utils/ApiError.js';
-import ApiResponse from '../utils/ApiResponse.js';
-import { generateBasicMindmap, generateSubtopics, gatherResources } from '../services/aiService.js';
+import Mindmap from "../models/MindMap.model.js";
+import Node from "../models/Node.model.js";
+import Profile from "../models/Profile.model.js";
+import asyncHandler from "../utils/asyncHandler.js";
+import mongoose from "mongoose";
+import ApiError from "../utils/ApiError.js";
+import ApiResponse from "../utils/ApiResponse.js";
+import { generateBasicMindmap, generateSubtopics, gatherResources } from "../services/aiService.js";
+import downloadResources from "../services/downloadResources.js";
 
+
+// Helper function to generate edges between nodes
 const generateEdges = (nodes) => {
-    return nodes
-        .filter(node => node.parent)
-        .map(node => ({
+    // Add ancestor property to each node
+    const nodesWithAncestors = nodes.map(node => ({
+        ...node,
+        ancestors: node.parent ? [...(nodes.find(n => n._id === node.parent)?.ancestor || []), node.parent.toString()] : []
+    }));
+
+    // Generate edges (same logic as before)
+    const newEdges = nodesWithAncestors
+        .filter((node) => node.parent)
+        .map((node) => ({
             id: `${node.parent}-${node._id}`,
             source: node.parent.toString(),
             target: node._id.toString(),
+            animated: true,
+            type: "smoothstep",
+            markerEnd: {
+                type: "arrowclosed",
+                color: "orange",
+                width: 15,
+                height: 15,
+            },
+            style: {
+                stroke: "orange",
+                strokeWidth: 3,
+            }
         }));
+
+    return {
+        nodes: nodesWithAncestors,
+        edges: newEdges
+    };
+};
+
+
+// Helper function to ensure valid resources field
+const ensureValidResources = (node) => {
+    if (!node.resources || typeof node.resources !== 'object' || Array.isArray(node.resources)) {
+        node.resources = {};
+    }
+    // Initialize all expected fields if missing
+    const resourceFields = ['links', 'images', 'videos', 'notes', 'markdown', 'diagrams', 'codeSnippets'];
+    resourceFields.forEach(field => {
+        if (!node.resources[field]) {
+            node.resources[field] = [];
+        }
+    });
 };
 
 export default {
     getAllMindmaps: asyncHandler(async (req, res) => {
         const { user } = req;
-        const mindmaps = await Mindmap.find({ owner: user.id })
-            .populate('rootNode')
+        const mindmaps = await Mindmap.find({
+            $or: [
+                { owner: user.id },
+                { visibility: "public" }
+            ]
+        })
+            .populate("rootNode")
             .sort({ createdAt: -1 });
-        res.status(200).json(new ApiResponse(200, { mindmaps }, 'Mindmaps fetched successfully'));
+        if (!mindmaps || mindmaps.length === 0) {
+            throw new ApiError(404, "No mindmaps found");
+        }
+        res.status(200).json(new ApiResponse(200, { mindmaps }, "Mindmaps fetched successfully"));
     }),
+
     createMindmap: asyncHandler(async (req, res) => {
         const { title } = req.body;
         const { user } = req;
 
-        // Validate input
-        if (!title) throw new ApiError(400, 'Title is required');
-        if (!user || !user.id) throw new ApiError(401, 'User not authenticated');
+        if (!title) throw new ApiError(400, "Title is required");
+        if (!user || !user.id) throw new ApiError(401, "User not authenticated");
 
-        // Call AI to generate basic mindmap
-        const { nodes: aiNodes } = await generateBasicMindmap(title);
-        if (!aiNodes || aiNodes.length === 0) {
-            throw new ApiError(500, 'Failed to generate mindmap structure');
-        }
+        try {
+            //remove _id and userID
+            const userProfile = await Profile.findOne({ userId: user.id }).select('-_id -userId -createdAt -updatedAt');
+            //convert whole object to string represenation to give to ai
+            userProfile.bio = userProfile.bio.toString();
+            userProfile.contentTypes = userProfile.contentTypes.toString();
+            userProfile.language = userProfile.language.toString();
+            userProfile.background = userProfile.background.toString();
+            userProfile.interests = userProfile.interests.toString();
+            userProfile.learningGoals = userProfile.learningGoals.toString();
+            userProfile.learningStyle = userProfile.learningStyle.toString();
+            userProfile.knowledgeLevel = userProfile.knowledgeLevel.toString();
 
-        // Generate ObjectIds for nodes
-        const nodeDocs = aiNodes.map((node, index) => ({
-            data: node.data,
-            position: node.position,
-            mindmapId: new mongoose.Types.ObjectId(), // Temporary
-            parent: null, // Will be set after nodes are created
-            _id: new mongoose.Types.ObjectId(),
-        }));
 
-        // Set parent references using ObjectIds
-        nodeDocs.forEach((doc, index) => {
-            if (aiNodes[index].parentIndex !== null) {
-                doc.parent = nodeDocs[aiNodes[index].parentIndex]._id;
+            // console.log("User profile:", userProfile);
+            const { nodes: aiNodes, tags: aiTags } = await generateBasicMindmap(title, userProfile);
+            if (!aiNodes || aiNodes.length === 0) {
+                throw new ApiError(500, "Failed to generate mindmap structure");
             }
-        });
 
-        // Create mindmap
-        const mindmap = new Mindmap({
-            owner: user.id,
-            title,
-            rootNode: nodeDocs[0]._id,
-            nodeCount: nodeDocs.length,
-        });
-        await mindmap.save();
+            const nodeDocs = aiNodes.map((node, index) => ({
+                _id: new mongoose.Types.ObjectId(),
+                data: node.data,
+                mindmapId: new mongoose.Types.ObjectId(),
+                parent: null,
+                isLeafNode: true,
+                resources: {}
+            }));
 
-        // Update mindmapId for all nodes
-        nodeDocs.forEach(doc => {
-            doc.mindmapId = mindmap._id;
-        });
+            nodeDocs.forEach((doc, index) => {
+                const parentIndex = aiNodes[index].parentIndex;
+                if (parentIndex !== null && parentIndex >= 0) {
+                    doc.parent = nodeDocs[parentIndex]._id;
+                }
+            });
 
-        // Insert nodes
-        await Node.insertMany(nodeDocs);
+            aiNodes.forEach((node, idx) => {
+                const parentIdx = node.parentIndex;
+                if (parentIdx !== null && parentIdx >= 0) {
+                    nodeDocs[parentIdx].isLeafNode = false;
+                }
+            });
 
-        // Generate edges
-        const edges = generateEdges(nodeDocs);
-        // Update mindmap with node count
-        mindmap.nodeCount = nodeDocs.length;
-        await mindmap.save();
+            const mindmap = new Mindmap({
+                owner: user.id,
+                title,
+                rootNode: nodeDocs[0]._id,
+                nodeCount: nodeDocs.length,
+                tags: aiTags || [],
+            });
 
-        // nodeDocs.forEach(node => {
-        //     node.id = node._id;
-        // });
+            const session = await mongoose.startSession();
+            session.startTransaction();
+            try {
+                await mindmap.save({ session });
+                nodeDocs.forEach((doc) => {
+                    doc.mindmapId = mindmap._id;
+                });
+                await Node.insertMany(nodeDocs, { session });
+                await session.commitTransaction();
+                session.endSession();
+            } catch (error) {
+                await session.abortTransaction();
+                session.endSession();
+                throw error;
+            }
 
-        res.status(201).json(new ApiResponse(201, { mindmap, nodes: nodeDocs, edges }, 'Mindmap created'));
+            res
+                .status(201)
+                .json(new ApiResponse(201, { mindmap }, "Mindmap created"));
+        } catch (error) {
+            console.error("Error creating mindmap:", error);
+            throw new ApiError(500, "Failed to create mindmap");
+        }
     }),
 
     getMindmap: asyncHandler(async (req, res) => {
         const { mindmapId } = req.params;
         const { user } = req;
 
-        const mindmap = await Mindmap.findById(mindmapId).populate('rootNode');
-        if (!mindmap || mindmap.owner.toString() !== user.id.toString()) {
-            throw new ApiError(404, 'Mindmap not found');
-        }
-
-        const nodes = await Node.find({ mindmapId });
-        const edges = generateEdges(nodes);
-
-        res.status(200).json(new ApiResponse(200, { mindmap, nodes, edges }, 'Mindmap fetched'));
+        const mindmap = await Mindmap.findById(mindmapId).populate("rootNode");
+        // if (!mindmap || mindmap.owner.toString() !== user.id.toString()) {
+        //     throw new ApiError(401, "Unauthorized for Mindmap!");
+        // }
+        const ownerId = mindmap.owner;
+        // Fetch nodes using lean query (much faster for read-only ops)
+        const nodes = await Node.find({ mindmapId }).sort({ path: 1 }).lean();
+ 
+        const { nodes: updatedNodes, edges } = generateEdges(nodes);
+        // console.log("Updated nodes:", updatedNodes);
+        res.status(200).json(new ApiResponse(200, { nodes: updatedNodes, edges, ownerId }, "Mindmap fetched"));
     }),
 
     expandNode: asyncHandler(async (req, res) => {
         const { mindmapId, nodeId } = req.params;
         const { user } = req;
 
+        if (!mindmapId || !nodeId) throw new ApiError(400, "Mindmap ID and Node ID are required");
+
         const mindmap = await Mindmap.findById(mindmapId);
         if (!mindmap || mindmap.owner.toString() !== user.id.toString()) {
-            throw new ApiError(404, 'Mindmap not found');
+            throw new ApiError(401, "Unauthorized for Mindmap!");
         }
 
         const parentNode = await Node.findById(nodeId);
         if (!parentNode || parentNode.mindmapId.toString() !== mindmapId) {
-            throw new ApiError(404, 'Node not found');
+            throw new ApiError(404, "Node not found");
         }
 
-        const { nodes: aiNodes } = await generateSubtopics(parentNode.data.label);
-        if (!aiNodes || aiNodes.length === 0) {
-            throw new ApiError(500, 'Failed to generate subtopics');
-        }
+        ensureValidResources(parentNode);
+        await parentNode.save();
 
-        // Generate node documents with temporary parent values
-        const nodeDocs = aiNodes.map((node) => ({
-            data: node.data,
-            position: node.position,
-            mindmapId: mindmap._id,
-            parent: null, // Temporary
-            _id: new mongoose.Types.ObjectId(),
-        }));
-
-        // Assign parent IDs in a second pass
-        nodeDocs.forEach((doc, index) => {
-            if (index === 0) {
-                doc.parent = parentNode._id; // First node connects to the parent
-            } else if (aiNodes[index].parentIndex !== null && aiNodes[index].parentIndex >= 0 && aiNodes[index].parentIndex < nodeDocs.length) {
-                doc.parent = nodeDocs[aiNodes[index].parentIndex]._id;
-            } else {
-                doc.parent = parentNode._id; // Fallback to parentNode if parentIndex is invalid
+        try {
+            const userProfile = { profession: user.profession || 'unknown', experienceYears: user.experienceYears || 0 };
+            const { nodes: aiNodes } = await generateSubtopics(parentNode.data.label + '-' + parentNode.data.shortDesc, userProfile);
+            if (!aiNodes || aiNodes.length === 0) {
+                throw new ApiError(500, "Failed to generate subtopics");
             }
-        });
 
-        // Insert new nodes
-        const newNodes = await Node.insertMany(nodeDocs);
+            const nodeDocs = aiNodes.map((node) => ({
+                _id: new mongoose.Types.ObjectId(),
+                data: node.data,
+                mindmapId: mindmap._id,
+                parent: null,
+                isLeafNode: true,
+                resources: {}
+            }));
 
-        // Update node count
-        mindmap.nodeCount += newNodes.length;
-        await mindmap.save();
+            nodeDocs.forEach((doc, idx) => {
+                if (idx === 0) {
+                    doc.parent = parentNode._id;
+                } else if (
+                    aiNodes[idx].parentIndex !== null &&
+                    aiNodes[idx].parentIndex >= 0 &&
+                    aiNodes[idx].parentIndex < nodeDocs.length
+                ) {
+                    doc.parent = nodeDocs[aiNodes[idx].parentIndex]._id;
+                } else {
+                    doc.parent = parentNode._id;
+                }
+            });
 
-        // Generate edges
-        const edges = generateEdges(newNodes);
+            aiNodes.forEach((node, idx) => {
+                if (node.parentIndex !== null && node.parentIndex >= 0) {
+                    nodeDocs[node.parentIndex].isLeafNode = false;
+                }
+            });
 
-        res.status(200).json(new ApiResponse(200, { newNodes, edges }, 'Node expanded'));
+            const session = await mongoose.startSession();
+            session.startTransaction();
+            try {
+                const newNodes = await Node.insertMany(nodeDocs, { session });
+
+                if (parentNode.isLeafNode) {
+                    parentNode.isLeafNode = false;
+                    await parentNode.save({ session });
+                }
+
+                mindmap.nodeCount += newNodes.length;
+                await mindmap.save({ session });
+
+                await session.commitTransaction();
+                session.endSession();
+            } catch (error) {
+                await session.abortTransaction();
+                session.endSession();
+                throw error;
+            }
+            const { nodes: updatedNodes, edges } = generateEdges(nodeDocs);
+            res.status(200).json(new ApiResponse(200, { newNodes: updatedNodes, edges }, "Node expanded"));
+        } catch (error) {
+            console.error("Error expanding node:", error);
+            throw new ApiError(500, "Failed to expand node");
+        }
     }),
 
     getNodeResources: asyncHandler(async (req, res) => {
         const { mindmapId, nodeId } = req.params;
         const { user } = req;
 
+        if (!mindmapId || !nodeId) throw new ApiError(400, "Mindmap ID and Node ID are required");
+
         const mindmap = await Mindmap.findById(mindmapId);
-        if (!mindmap || mindmap.owner.toString() !== user.id.toString()) {
-            throw new ApiError(404, 'Mindmap not found');
-        }
+
 
         const node = await Node.findById(nodeId);
         if (!node || node.mindmapId.toString() !== mindmapId) {
-            throw new ApiError(404, 'Node not found');
+            throw new ApiError(404, "Node not found");
         }
 
-        if (node.resources?.length > 0) {
-            return res.status(200).json(new ApiResponse(200, { resources: node.resources }, 'Resources fetched'));
-        }
-
-        const { resources } = await gatherResources(node.data.label);
-        node.resources = resources;
+        // Ensure resources is a valid object with all fields initialized
+        ensureValidResources(node);
         await node.save();
 
-        res.status(200).json(new ApiResponse(200, { resources }, 'Resources gathered'));
+        // Check if resources object is effectively empty
+        const resourceFields = ['links', 'images', 'videos', 'notes', 'markdown', 'diagrams', 'codeSnippets'];
+        const isResourcesEmpty = !node.resources ||
+            Object.keys(node.resources).length === 0 ||
+            resourceFields.every(field => {
+                const value = node.resources[field];
+                return !value || (Array.isArray(value) && value.length === 0);
+            });
+
+        if (!isResourcesEmpty) {
+            return res.status(200).json(new ApiResponse(200, { resources: node.resources }, "Resources fetched"));
+        }
+        if (!mindmap || mindmap.owner.toString() !== user.id.toString()) {
+            throw new ApiError(401, "Unauthorized for Resources Generation!");
+        }
+
+        try {
+            const userProfile = { profession: user.profession || 'unknown', experienceYears: user.experienceYears || 0 };
+
+            const { resources } = await gatherResources(node.data.label + '-' + node.data.shortDesc, mindmap.title, userProfile);
+            node.resources = resources;
+            await node.save();
+            res.status(200).json(new ApiResponse(200, { resources }, "Resources gathered"));
+        } catch (error) {
+            console.error("Error gathering resources:", error);
+            throw new ApiError(500, "Failed to gather resources");
+        }
     }),
 
     updateNode: asyncHandler(async (req, res) => {
         const { mindmapId, nodeId } = req.params;
-        const { data, position, status } = req.body;
+        const { data, status, resources } = req.body;
         const { user } = req;
+
+        if (!mindmapId || !nodeId) throw new ApiError(400, "Mindmap ID and Node ID are required");
 
         const mindmap = await Mindmap.findById(mindmapId);
         if (!mindmap || mindmap.owner.toString() !== user.id.toString()) {
-            throw new ApiError(404, 'Mindmap not found');
+            throw new ApiError(401, "Unauthorized for Mindmap updatation!");
         }
 
         const node = await Node.findById(nodeId);
         if (!node || node.mindmapId.toString() !== mindmapId) {
-            throw new ApiError(404, 'Node not found');
+            throw new ApiError(404, "Node not found");
         }
 
+        ensureValidResources(node);
+
         if (data) node.data = { ...node.data, ...data };
-        if (position) node.position = { ...node.position, ...position };
         if (status) node.status = status;
+        if (resources) {
+            const validResourceKeys = ['links', 'images', 'videos', 'notes', 'markdown', 'diagrams', 'codeSnippets'];
+            const isValidResources = Object.keys(resources).every(key => validResourceKeys.includes(key));
+            if (!isValidResources) {
+                throw new ApiError(400, "Invalid resources structure");
+            }
+            node.resources = { ...node.resources, ...resources };
+        }
 
         await node.save();
 
-        res.status(200).json(new ApiResponse(200, { node }, 'Node updated'));
-    }),
-
-    deleteNode: asyncHandler(async (req, res) => {
-        const { mindmapId, nodeId } = req.params;
-        const { user } = req;
-
-        const mindmap = await Mindmap.findById(mindmapId);
-        if (!mindmap || mindmap.owner.toString() !== user.id.toString()) {
-            throw new ApiError(404, 'Mindmap not found');
-        }
-
-        const node = await Node.findById(nodeId);
-        if (!node || node.mindmapId.toString() !== mindmapId) {
-            throw new ApiError(404, 'Node not found');
-        }
-
-        await node.remove();
-        mindmap.nodeCount -= 1;
-        await mindmap.save();
-
-        res.status(200).json(new ApiResponse(200, {}, 'Node deleted'));
+        res.status(200).json(new ApiResponse(200, { node }, "Node updated"));
     }),
 
     updateMindmap: asyncHandler(async (req, res) => {
@@ -225,9 +346,11 @@ export default {
         const { title, tags, visibility } = req.body;
         const { user } = req;
 
+        if (!mindmapId) throw new ApiError(400, "Mindmap ID is required");
+
         const mindmap = await Mindmap.findById(mindmapId);
         if (!mindmap || mindmap.owner.toString() !== user.id.toString()) {
-            throw new ApiError(404, 'Mindmap not found');
+            throw new ApiError(401, "Unauthorized for Updating Mindmap!");
         }
 
         if (title) mindmap.title = title;
@@ -237,6 +360,24 @@ export default {
         mindmap.updatedAt = Date.now();
         await mindmap.save();
 
-        res.status(200).json(new ApiResponse(200, { mindmap }, 'Mindmap updated'));
+        res.status(200).json(new ApiResponse(200, { mindmap }, "visibility Changed!"));
     }),
+
+    deleteMindmap: asyncHandler(async (req, res) => {
+        const { mindmapId } = req.params;
+        const { user } = req;
+
+        if (!mindmapId) throw new ApiError(400, "Mindmap ID is required");
+
+        const mindmap = await Mindmap.findById(mindmapId);
+        if (!mindmap || mindmap.owner.toString() !== user.id.toString()) {
+            throw new ApiError(401, "Unauthorized for Deleting Mindmap!");
+        }
+
+        await mindmap.deleteOne();
+
+        res.status(200).json(new ApiResponse(200, {}, "Mindmap deleted"));
+    }),
+
+    downloadResources: downloadResources,
 };

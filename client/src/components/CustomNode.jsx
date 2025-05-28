@@ -1,146 +1,234 @@
-// import React, { useState } from "react";
-// import { Handle, Position } from "@xyflow/react";
-// import "@xyflow/react/dist/style.css";
-
-// const CustomNode = React.memo(({ id, data }) => {
-//   const [isHovered, setIsHovered] = useState(false);
-
-//   return (
-//     <>
-//       <Handle type="target" position={Position.Top} />
-//       <div
-//         className="node"
-//         style={{
-//           color: "white",
-//           background: "linear-gradient(145deg, #1e1e1e, #2d2d2d)",
-//           padding: "10px",
-//           display: "flex",
-//           flexDirection: "column",
-//           alignItems: "center",
-//           justifyContent: "space-between",
-//           width: "200px",
-//           height: "100px",
-//           border: "1px solid #333",
-//           borderRadius: "8px",
-//           boxShadow: isHovered
-//             ? "0 6px 8px rgba(0, 0, 0, 0.2)"
-//             : "0 4px 6px rgba(0, 0, 0, 0.1)",
-//           transition: "transform 0.3s ease, box-shadow 0.3s ease",
-//           transform: isHovered ? "scale(1.05)" : "none",
-//           cursor: "move",
-//         }}
-//         onMouseEnter={() => setIsHovered(true)}
-//         onMouseLeave={() => setIsHovered(false)}
-//       >
-//         <button
-//           title="Open details"
-//           style={{
-//             background: "none",
-//             border: "none",
-//             color: "white",
-//             fontWeight: "bold",
-//             cursor: "pointer",
-//             textDecoration: "none",
-//             transition: "color 0.3s ease, text-decoration 0.3s ease",
-//             marginBottom: "10px",
-//           }}
-//           onClick={() => data.openDrawer()}
-//           onMouseEnter={(e) => {
-//             e.target.style.color = "#ff0072";
-//             e.target.style.textDecoration = "underline";
-//           }}
-//           onMouseLeave={(e) => {
-//             e.target.style.color = "#fff";
-//             e.target.style.textDecoration = "none";
-//           }}
-//         >
-//           {data.label}
-//         </button>
-//         <button
-//           title="Expand this node"
-//           onClick={() => data.onExpand(id)}
-//           style={{
-//             padding: "5px 10px",
-//             background: "transparent",
-//             color: "#ff0072",
-//             border: "1px solid #ff0072",
-//             borderRadius: "4px",
-//             cursor: "pointer",
-//             transition: "background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease",
-//             boxShadow: "0 0 5px rgba(255, 0, 114, 0.5)",
-//             display: "flex",
-//             alignItems: "center",
-//           }}
-//           onMouseEnter={(e) => {
-//             e.target.style.background = "#ff0072";
-//             e.target.style.color = "#fff";
-//             e.target.style.boxShadow = "0 0 10px #ff0072";
-//           }}
-//           onMouseLeave={(e) => {
-//             e.target.style.background = "transparent";
-//             e.target.style.color = "#ff0072";
-//             e.target.style.boxShadow = "0 0 5px rgba(255, 0, 114, 0.5)";
-//           }}
-//         >
-//           <span style={{ marginRight: "5px" }}>+</span> Expand Node
-//         </button>
-//       </div>
-//       <Handle type="source" position={Position.Bottom} />
-//     </>
-//   );
-// });
-
-// export default CustomNode;
-import React from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import { Handle, Position } from "@xyflow/react";
-import { FiChevronRight } from "react-icons/fi";
+import {
+  FaChevronDown,
+  FaCheck,
+  FaBook,
+  FaExternalLinkAlt,
+  FaExpandAlt,
+  FaCompressAlt,
+} from "react-icons/fa";
+import { AiOutlineStop } from "react-icons/ai";
+import styles from "./CustomNode.module.css";
 
-const CustomNode = ({ data }) => {
+const STATUS = {
+  LEARNING: "learning",
+  COMPLETED: "completed",
+};
+
+const CustomNode = React.memo(({ data, selected }) => {
+  const [isDescriptionVisible, setIsDescriptionVisible] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [status, setStatus] = useState(data.status || STATUS.LEARNING);
+  const descriptionRef = useRef(null);
+
+  useEffect(() => {
+    if (descriptionRef.current && data.shortDesc) {
+      descriptionRef.current.style.setProperty(
+        "--content-height",
+        `${descriptionRef.current.scrollHeight}px`
+      );
+    }
+  }, [data.shortDesc]);
+
+  const toggleStatus = useCallback(async () => {
+    const newStatus =
+      status === STATUS.COMPLETED ? STATUS.LEARNING : STATUS.COMPLETED;
+    setStatus(newStatus);
+    if (data.onUpdate) {
+      try {
+        await data.onUpdate(data.id, { status: newStatus });
+      } catch (error) {
+        setStatus(status);
+        console.error("Failed to update status:", error);
+      }
+    }
+  }, [data.onUpdate, data.id, status, setStatus]);
+
+  const toggleDescription = useCallback(() => {
+    setIsDescriptionVisible((prev) => !prev);
+  }, []);
+
+  const handleExpandCollapse = useCallback(() => {
+    if (data.onCollapse) {
+      data.onCollapse(data.id);
+    } else if (data.onExpand) {
+      data.onExpand(data.id);
+    }
+  }, [data.onCollapse, data.onExpand, data.id]);
+
+  // Base styles that don't change
+  const baseHandleStyle = {
+    color: "#fff",
+    width: "30px",
+    height: "30px",
+    transition: "all 0.2s ease",
+    borderRadius: "0%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  };
+
+  // Function to compute dynamic colors based on hover and props
+  const getHandleColors = (isHovered) => {
+    if (data.onCollapse) {
+      return {
+        backgroundColor: isHovered ? "#f87171" : "#ef4444",
+        borderColor: isHovered ? "#dc2626" : "#b91c1c",
+      };
+    }
+    if (data.onExpand) {
+      return {
+        backgroundColor: isHovered ? "#4ade80" : "#22c55e",
+        borderColor: isHovered ? "#16a34a" : "#15803d",
+      };
+    }
+    return {
+      backgroundColor: isHovered ? "#ff0072" : "#4b5563",
+      borderColor: isHovered ? "#cc0060" : "#374151",
+    };
+  };
+
+  // Memoized handle style, recomputed only when dependencies change
+  const handleStyle = useMemo(
+    () => ({
+      ...baseHandleStyle,
+      ...getHandleColors(isHovered),
+    }),
+    [isHovered, data.onCollapse, data.onExpand]
+  );
+
   return (
     <>
-      <Handle type="target" position={Position.Left} style={{ background: "transparent", border: "none" }} />
-
+      <Handle type="target" position={Position.Left} style={handleStyle} />
       <div
-        style={{
-          backgroundColor: "#1c1c1c",
-          border: "1px solid #333",
-          borderRadius: "12px",
-          width: "240px",
-          height: "120px",
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4)",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          padding: "12px 16px",
-          color: "white",
-          fontFamily: "sans-serif",
+        className={`${styles.node} ${selected ? styles.selected : ""} ${
+          data.highlighted ? styles.highlighted : ""
+        }`}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        role="region"
+        aria-label={`Node: ${data.label}`}
+      >
+        <div className={styles.header}>
+          <div className={styles.leftGroup}>
+            {data?.status && (
+              <button
+                className={styles.statusButton}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleStatus();
+                }}
+                aria-label={`Mark as ${
+                  status === STATUS.COMPLETED ? "Learning" : "Completed"
+                }`}
+              >
+                {status === STATUS.COMPLETED ? (
+                  <FaCheck
+                    className={styles.checkIcon}
+                    title="Marked as Learning"
+                  />
+                ) : (
+                  <FaBook
+                    className={styles.bookIcon}
+                    title="Marked as Completed"
+                  />
+                )}
+              </button>
+            )}
+          </div>
+          <div className={styles.controls}>
+            {data.shortDesc && (
+              <button
+                className={styles.descriptionToggle}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleDescription();
+                }}
+                aria-label={`${
+                  isDescriptionVisible ? "Hide" : "Show"
+                } description`}
+              >
+                <FaChevronDown
+                  className={`${styles.chevron} ${
+                    isDescriptionVisible ? styles.rotated : ""
+                  }`}
+                  title={`${
+                    isDescriptionVisible ? "Hide" : "Show"
+                  } description`}
+                />
+              </button>
+            )}
+            <button
+              className={styles.resourceButton}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (data.openDrawer) {
+                  data.openDrawer();
+                }
+              }}
+              aria-label="Open resources"
+            >
+              <FaExternalLinkAlt
+                className={styles.resourceIcon}
+                title="Open resources"
+              />
+            </button>
+          </div>
+        </div>
+        <hr className={styles.separator} />
+        <div className={styles.label}>{data.label}</div>
+        {data.shortDesc && (
+          <div
+            ref={descriptionRef}
+            className={`${styles.description} ${
+              isDescriptionVisible ? styles.visible : ""
+            }`}
+            aria-hidden={!isDescriptionVisible}
+          >
+            <div className={styles.descriptionContent}>{data.shortDesc}</div>
+          </div>
+        )}
+      </div>
+      <Handle
+        type="source"
+        position={Position.Right}
+        style={handleStyle}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleExpandCollapse();
         }}
       >
-        {/* Top Row */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          {/* Circle Indicator */}
-          <div
-            style={{
-              width: "20px",
-              height: "20px",
-              borderRadius: "50%",
-              border: "2px solid #555",
-            }}
-          />
-
-          {/* Arrow */}
-          <FiChevronRight size={20} color="#999" style={{ cursor: "pointer" }} />
+        <div className={styles.handleIcon}>
+          {data.onCollapse ? (
+            <FaCompressAlt
+              size={25}
+              className={styles.handleIconInner}
+              title="Collapse"
+            />
+          ) : data.onExpand ? (
+            <FaExpandAlt
+              size={25}
+              className={styles.handleIconInner}
+              title="Expand"
+            />
+          ) : (
+            <AiOutlineStop 
+              size={25}
+              className={styles.handleIconInner}
+              title="End"
+            />
+          )}
         </div>
-
-        {/* Centered Label */}
-        <div style={{ textAlign: "center", fontSize: "16px", fontWeight: "500", marginBottom: "12px" }}>
-          {data.label || "Frontend Development"}
-        </div>
-      </div>
-
-      <Handle type="source" position={Position.Right} style={{ background: "transparent", border: "none" }} />
+      </Handle>
     </>
   );
-};
+});
 
 export default CustomNode;

@@ -4,16 +4,15 @@ Path Genie is an interactive web application that helps users create personalize
 
 ## Table of Contents
 
-* [Features](https://grok.com/chat/2dc7c0f0-5431-4729-9db1-4942faaf2a6f#features)
-* [Tech Stack](https://grok.com/chat/2dc7c0f0-5431-4729-9db1-4942faaf2a6f#tech-stack)
-* [Prerequisites](https://grok.com/chat/2dc7c0f0-5431-4729-9db1-4942faaf2a6f#prerequisites)
-* [Installation](https://grok.com/chat/2dc7c0f0-5431-4729-9db1-4942faaf2a6f#installation)
-* [Configuration](https://grok.com/chat/2dc7c0f0-5431-4729-9db1-4942faaf2a6f#configuration)
-* [Usage](https://grok.com/chat/2dc7c0f0-5431-4729-9db1-4942faaf2a6f#usage)
-* [Project Structure](https://grok.com/chat/2dc7c0f0-5431-4729-9db1-4942faaf2a6f#project-structure)
-* [Contributing](https://grok.com/chat/2dc7c0f0-5431-4729-9db1-4942faaf2a6f#contributing)
-* [License](https://grok.com/chat/2dc7c0f0-5431-4729-9db1-4942faaf2a6f#license)
-* [Acknowledgements](https://grok.com/chat/2dc7c0f0-5431-4729-9db1-4942faaf2a6f#acknowledgements)
+* [Features]()
+* [Tech Stack]()
+* [Prerequisites]()
+* [Installation]()
+* [Configuration]()
+* [Usage]()
+* [Project Structure]()
+* [Contributing]()
+* [Acknowledgements]()
 
 ## Features
 
@@ -76,25 +75,31 @@ Create a `.env` file in the `server` directory with the following environment va
 
 ```
 PORT=8000
-BETTER_AUTH_SECRET=your_random_secret_value
-BETTER_AUTH_URL=http://localhost:5173
-GITHUB_CLIENT_ID=your_github_client_id
-GITHUB_CLIENT_SECRET=your_github_client_secret
-MONGODB_URI=mongodb://localhost:27017/path_genie
-SONAR_API_KEY=your_perplexity_sonar_api_key
+BETTER_AUTH_SECRET= "secret_here"
+BETTER_AUTH_URL=http://localhost:8000
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GITHUB_CLIENT_ID= "GITHUB_CLIENT_ID"
+GITHUB_CLIENT_SECRET= "<GITHUB_CLIENT_SECRET>"
+MONGODB_URI= <mongodb_uri>
+CLIENT_URL=http://localhost:5173
+SERVER_URL=http://localhost:8000
+PERPLEXITY_API_KEY = <perplexity_api_key>
 ```
 
 Create a `.env` file in the `client` directory (if needed for frontend-specific variables):
 
 ```
-VITE_API_URL=http://localhost:8000
-VITE_SONAR_API_KEY=your_perplexity_sonar_api_key
+VITE_SERVER_URL=http://localhost:8000
+VITE_CLIENT_URL=http://localhost:5173
+VITE_MODE = development
+# VITE_MODE = production
 ```
 
 * **BETTER_AUTH_SECRET** : Generate a random string (e.g., `openssl rand -base64 32`).
 * **GITHUB_CLIENT_ID/SECRET** : Obtain from your GitHub OAuth app settings.
 * **MONGODB_URI** : Your MongoDB connection string.
-* **SONAR_API_KEY** : Obtain from Perplexity AI for the Sonar API.
+* **PERPLEXITY_API_KEY**: Obtain from Perplexity AI for the Sonar API.
 
 ## Usage
 
@@ -102,7 +107,7 @@ VITE_SONAR_API_KEY=your_perplexity_sonar_api_key
 
 ```bash
    cd server
-   npm run dev
+   npm run start
 ```
 
    The backend will run on `http://localhost:8000`.
@@ -166,10 +171,6 @@ We welcome contributions to Path Genie! To contribute:
 5. Open a pull request with a detailed description of your changes.
 
 Please follow the [Code of Conduct](https://grok.com/chat/CODE_OF_CONDUCT.md) and ensure your code adheres to the project’s style guidelines (e.g., ESLint, Prettier).
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](https://grok.com/chat/LICENSE) file for details.
 
 ## Acknowledgements
 

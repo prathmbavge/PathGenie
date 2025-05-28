@@ -1,4 +1,3 @@
-Based on your request, I’ll provide an example of a **ReactJS learning roadmap** structured as a mindmap, formatted as a JSON response from the AI service that aligns with the solution you described: omitting AI-generated IDs, using `parentIndex` to define parent-child relationships, and relying on server-generated MongoDB `ObjectId` values for `_id` and `parent` fields. This roadmap will be suitable for your backend to process and store in MongoDB, and for rendering in React Flow on the frontend.
 
 ### Context
 

@@ -3,6 +3,11 @@ import PageLayout from "./PageLayout";
 import Hero from "../components/LandingPageComponents/Hero";
 import Grid from "../components/LandingPageComponents/Grid";
 
+/**
+ * The LandingPage component renders the landing page of the website.
+ *
+ * @returns {React.ReactElement} The LandingPage component.
+ */
 const LandingPage = () => {
   return (
     <PageLayout>

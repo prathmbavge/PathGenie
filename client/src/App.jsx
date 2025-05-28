@@ -63,6 +63,19 @@ function PublicRoute({ children }) {
   return children;
 }
 
+
+/**
+ * App component renders the main application UI.
+ *
+ * Conditionally renders the Navbar based on the following rules:
+ *   - Hide Navbar on public routes (login, register)
+ *   - Hide Navbar on mindmap routes (starts with "/mindmap/")
+ *   - Show Navbar on all other routes when user is signed in
+ *
+ * Wraps all routes inside a Suspense component to support lazy loading
+ *
+ * Also renders a global Toaster component for displaying toast notifications
+ */
 export default function App() {
   const location = useLocation();
 

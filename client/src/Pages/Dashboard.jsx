@@ -17,6 +17,12 @@ import {
   deleteMindmap,
 } from "../api/mindmapApi";
 
+/**
+ * The dashboard page, displaying a list of mindmaps and allowing the user to
+ * create a new mindmap, toggle visibility, and delete existing mindmaps.
+ *
+ * @returns {JSX.Element}
+ */
 const Dashboard = () => {
   const [loading, setLoading] = useState(false);
   const [mindmaps, setMindmaps] = useState([]);

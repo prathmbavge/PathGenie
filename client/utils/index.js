@@ -29,6 +29,12 @@ export const requestHandler = async (
   try {
     const response = await toast.promise(apiCall(), {
       loading: message,
+      /**
+       * Callback on successful response.
+       * @param {any} response - Response returned by the API call.
+       * @returns {string|null} - If `isDisplaySuccess` is true, returns a success message to be displayed in a toast notification.
+       *                         Otherwise, returns null to prevent displaying a toast notification.
+       */
       success: (response) => {
 
         const successMsg = response?.message || 'Operation successful!';

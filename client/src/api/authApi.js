@@ -1,6 +1,18 @@
 import { signIn, signUp } from "../lib/auth-client";
 import constants from "../../constants";
 
+/**
+ * Attempts to log in a user using their email and password.
+ *
+ * @async
+ * @function userLogin
+ * @param {Object} formData - The form data containing user credentials.
+ * @param {string} formData.email - The user's email address.
+ * @param {string} formData.password - The user's password.
+ * @param {Function} setErrors - A function to set error messages.
+ * @throws Will throw an error if the login process fails.
+ */
+
 export const userLogin = async (formData, setErrors) => {
   try {
     await signIn.email(
@@ -27,6 +39,18 @@ export const userLogin = async (formData, setErrors) => {
   }
 };
 
+/**
+ * Attempts to register a new user with the provided form data.
+ *
+ * @async
+ * @function userRegister
+ * @param {Object} formData - The form data containing user credentials.
+ * @param {string} formData.email - The user's email address.
+ * @param {string} formData.password - The user's password.
+ * @param {string} formData.username - The user's username.
+ * @param {Function} setErrors - A function to set error messages.
+ * @throws Will throw an error if the registration process fails.
+ */
 export const userRegister = async (formData, setErrors) => {
   try {
     await signUp.email(
@@ -51,6 +75,15 @@ export const userRegister = async (formData, setErrors) => {
   }
 };
 
+/**
+ * Attempts to log in a user using their social media account.
+ *
+ * @async
+ * @function userSocialSignOn
+ * @param {string} provider - The social media provider name (e.g. "google", "github", etc.)
+ * @param {Function} setErrors - A function to set error messages.
+ * @throws Will throw an error if the sign-in process fails.
+ */
 export const userSocialSignOn = async (provider, setErrors) => {
   try {
     await signIn.social(

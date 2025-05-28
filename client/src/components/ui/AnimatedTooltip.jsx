@@ -8,6 +8,22 @@ import {
   useSpring,
 } from "motion/react";
 
+/**
+ * AnimatedTooltip component
+ *
+ * Renders a list of items with their respective images and details in a
+ * tooltip on hover. The tooltip is animated and rotates based on the
+ * position of the mouse.
+ *
+ * @param {object} props - Component props
+ * @param {array} props.items - List of items to render with their details
+ *
+ * @example
+ * <AnimatedTooltip items={[
+ *   { id: 1, name: 'John Doe', designation: 'Software Engineer', image: 'https://picsum.photos/100' },
+ *   { id: 2, name: 'Jane Doe', designation: 'Product Manager', image: 'https://picsum.photos/101' },
+ * ]} />
+ */
 export const AnimatedTooltip = ({ items }) => {
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const springConfig = { stiffness: 100, damping: 5 };

@@ -3,6 +3,13 @@ import { BentoGrid, BentoGridItem } from "../ui/BentoGrid";
 import { gridItems, people } from "../data";
 import { AnimatedTooltip } from "../ui/AnimatedTooltip";
 
+/**
+ * Renders a BentoGrid with a set of items that describe the key features of
+ * the application, and a AnimatedTooltip component that displays a list of
+ * people who have contributed to the project.
+ *
+ * @return {React.ReactElement} The rendered component.
+ */
 const Grid = () => {
   return (
     <section id="info">

@@ -8,6 +8,15 @@ import AuthForm from "../components/AuthComponents/AuthForm";
 import SlideButton from "../components/Buttons/SlideButton";
 import { FaUserPlus } from "react-icons/fa";
 
+/**
+ * A page for logging in to the app.
+ *
+ * This page renders a {@link TrueFocus} heading, a {@link SocialSignInButtons} component for logging in with
+ * Google or GitHub, an {@link AuthForm} component for logging in with an email and password, and a link to the
+ * register page.
+ *
+ * @returns {JSX.Element} The Login page component.
+ */
 const Login = () => {
   const navigate = useNavigate();
   const [socialError, setSocialError] = useState("");

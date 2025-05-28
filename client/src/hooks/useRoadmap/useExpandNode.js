@@ -1,124 +1,29 @@
-// // src/hooks/useRoadmap/useExpandNode.js
-// import { useRef, useCallback } from "react";
-// import { requestHandler } from "../../../utils/index";
-// import { showErrorToast, showSuccessToast } from "../../../utils/toastUtils";
-// import { expandNode, getNodeResources } from "../../api/mindmapApi";
-// import { getLayoutedElements } from "../../../utils/layout";
-
-// /**
-//  * Hook: useExpandNode
-//  * - mindmapId: string
-//  * - nodesRef, edgesRef: refs containing current arrays (always up-to-date)
-//  * - setNodes, setEdges, setLoading: state setters
-//  * - openDrawer: function to show resources when a leaf is clicked
-//  * - updateNodeHandler, toggleCollapse: callbacks for updating/collapsing nodes
-//  */
-// export const useExpandNode = (
-//   mindmapId,
-//   nodesRef,
-//   edgesRef,
-//   setNodes,
-//   setEdges,
-//   setLoading,
-//   openDrawer,
-//   updateNodeHandler,
-//   toggleCollapse
-// ) => {
-//   const abortControllerRef = useRef(null);
-
-//   const expandNodeHandler = useCallback(
-//     async (nodeId) => {
-//       if (!mindmapId) return;
-
-//       // Abort any ongoing expansion
-//       if (abortControllerRef.current) {
-//         abortControllerRef.current.abort();
-//       }
-//       abortControllerRef.current = new AbortController();
-
-//       await requestHandler(
-//         () =>
-//           expandNode(mindmapId, nodeId, abortControllerRef.current.signal),
-//         setLoading,
-//         async (res) => {
-//           // Create React Flow nodes from server response
-//           console.log("Expanded node data:", res.data.newNodes);
-//           const fetchedNodes = res.data.newNodes.map((node) => ({
-//             id: node._id.toString(),
-//             type: "custom",
-//             data: {
-//               id: node._id.toString(),
-//               status: node.status,
-//               shortDesc: node.data.shortDesc,
-//               label: node.data.label,
-//               // Only leaf nodes get an onExpand handler; non-leaf get onCollapse
-//               onExpand: node.isLeafNode ? expandNodeHandler : undefined,
-//               onUpdate: updateNodeHandler,
-//               onCollapse: node.isLeafNode ? undefined : toggleCollapse,
-//               openDrawer: async () => {
-//                 const { data } = await getNodeResources(
-//                   mindmapId,
-//                   node._id,
-//                   abortControllerRef.current.signal
-//                 );
-//                 openDrawer(data.resources || {});
-//               },
-//             },
-//             parent: node.parent ? node.parent.toString() : null,
-//             position: { x: 0, y: 0 },
-//             ancestors: node.ancestors || [],
-//           }));
-
-//           // Merge with existing nodes
-//           const mergedNodes = [...nodesRef.current, ...fetchedNodes];
-
-//           // CORRECTED: flatten the new edges before merging
-//           //      WRONG:  const edges = [res.data.edges, ...edgesRef.current];
-//           //      RIGHT: spread the new‐edges array
-//           const edges = [...res.data.edges, ...edgesRef.current];
-
-//           // Re-run layout on the entire graph
-//           const { nodes: layoutedNodes, edges: layoutedEdges } =
-//             getLayoutedElements(mergedNodes, edges, { direction: "LR" } );
-
-//           setNodes(layoutedNodes);
-//           setEdges(layoutedEdges);
-//           showSuccessToast("Node expanded successfully");
-//         },
-//         (error) => {
-//           if (error.name !== "AbortError") {
-//             console.error("Error expanding node:", error);
-//             showErrorToast("Failed to expand node.");
-//           }
-//         }
-//       );
-//     },
-//     [
-//       mindmapId,
-//       setLoading,
-//       setNodes,
-//       setEdges,
-//       openDrawer,
-//       nodesRef,
-//       edgesRef,
-//       updateNodeHandler,
-//       toggleCollapse, // ADDED so React re-creates this callback if toggleCollapse ever changes
-//     ]
-//   );
-
-//   return expandNodeHandler;
-// };
-
-
-
-
-
 import { useRef, useCallback } from "react";
 import { requestHandler } from "../../../utils/index";
 import { showErrorToast } from "../../../utils/toastUtils";
 import { expandNode, getNodeResources } from "../../api/mindmapApi";
 import { getLayoutedElements } from "../../../utils/layout";
 
+
+/**
+ * Hook: useExpandNode
+ *
+ * Given a node ID, expands it by retrieving its children from the server
+ * and adding them to the graph. Also updates the node's `onCollapse` handler
+ * to toggle its collapsed state.
+ *
+ * @param {string} mindmapId - The ID of the mindmap containing the node to be expanded.
+ * @param {React.MutableRefObject<Node[]>} nodesRef - A ref containing the current array of nodes.
+ * @param {React.MutableRefObject<Edge[]>} edgesRef - A ref containing the current array of edges.
+ * @param {React.Dispatch<React.SetStateAction<Node[]>>} setNodes - A state setter for the nodes array.
+ * @param {React.Dispatch<React.SetStateAction<Edge[]>>} setEdges - A state setter for the edges array.
+ * @param {React.Dispatch<React.SetStateAction<boolean>>} setLoading - A state setter for the loading state.
+ * @param {function(resources: any, nodeId: string): void} openDrawer - A callback to open the resources drawer when a leaf node is clicked.
+ * @param {function(nodeId: string): void} updateNodeHandler - A callback to update a node when its status is changed.
+ * @param {function(nodeId: string): void} toggleCollapse - A callback to toggle the collapsed state of a node.
+ *
+ * @returns {function(nodeId: string): void} A callback to expand a node by its ID.
+ */
 export const useExpandNode = (
   mindmapId,
   nodesRef,

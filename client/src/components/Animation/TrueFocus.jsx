@@ -1,7 +1,21 @@
-import { useEffect, useRef, useState } from "react";
-// eslint-disable-next-line no-unused-vars
+/* eslint-disable no-unused-vars */
+import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 
+
+/**
+ * A component that animates a sentence by focusing on a single word at a time,
+ * with an optional manual mode where the user can hover over a word to focus on it.
+ *
+ * @param {Object} props - Component props
+ * @param {string} [props.sentence="True Focus"] - The sentence to be animated
+ * @param {boolean} [props.manualMode=false] - Whether to enable manual mode
+ * @param {number} [props.blurAmount=5] - The amount of blur to apply to non-focused words
+ * @param {string} [props.borderColor="green"] - The color of the border around the focused word
+ * @param {string} [props.glowColor="rgba(0, 255, 0, 0.6)"] - The color of the glow around the focused word
+ * @param {number} [props.animationDuration=0.5] - The duration of the animation in seconds
+ * @param {number} [props.pauseBetweenAnimations=1] - The pause between animations in seconds
+ */
 const TrueFocus = ({
   sentence = "True Focus",
   manualMode = false,
@@ -139,3 +153,4 @@ const TrueFocus = ({
 };
 
 export default TrueFocus;
+

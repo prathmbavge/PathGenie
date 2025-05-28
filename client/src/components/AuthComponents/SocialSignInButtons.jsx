@@ -4,6 +4,15 @@ import PropTypes from "prop-types";
 import SlideButton from "../Buttons/SlideButton";
 import { FaGoogle, FaGithub } from "react-icons/fa";
 import { userSocialSignOn } from "../../api/authApi";
+/**
+ * SocialSignInButtons
+ *
+ * A component that renders two buttons for signing in with Google and GitHub.
+ *
+ * @param {Function} setError - A function to set error messages.
+ *
+ * @returns {React.ReactElement} - A React component that renders social sign-in buttons.
+ */
 const SocialSignInButtons = ({ setError }) => {
   const handleSocialSignIn = useCallback(
     async (provider) => {

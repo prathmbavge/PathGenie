@@ -8,6 +8,34 @@ import { useNavbarVisibility } from "../../hooks/useNavbarVisibility";
 import { navLinks, linkBaseClasses, activeLinkClasses } from "./constants";
 import { GrLogin, GrLogout } from "react-icons/gr";
 
+/**
+ * A navigation bar component that displays the application's logo,
+ * navigation links and a button to sign in or sign out. When the
+ * user is signed in, the navigation links are displayed. When the
+ * user is signed out, only the sign in button is displayed.
+ *
+ * The navigation bar is responsive and will hide or show the
+ * navigation links based on the screen size. On smaller screens,
+ * the navigation links are hidden and a hamburger menu is displayed
+ * which can be used to toggle the visibility of the navigation links.
+ *
+ * The component uses the `useSession` hook from `better-auth` to
+ * determine whether the user is signed in or not. When the user is
+ * signed in, the component will display the navigation links. When
+ * the user is signed out, the component will display a sign in button.
+ *
+ * The component also uses the `useNavbarVisibility` hook to
+ * determine whether the navigation bar should be visible or not.
+ * The hook takes two arguments, the `breakpoint` and the `distance`.
+ * The `breakpoint` is the screen size at which the navigation bar
+ * should be hidden or shown. The `distance` is the distance from the
+ * top of the screen to the navigation bar. When the user scrolls
+ * past the `distance`, the navigation bar will be hidden. When the
+ * user scrolls back up to the `distance`, the navigation bar will
+ * be shown.
+ *
+ * @returns {React.ReactElement} The navigation bar component.
+ */
 const Navbar = () => {
   const navigate = useNavigate();
   const { data: session, isPending } = authClient.useSession();

@@ -11,6 +11,16 @@ import { IoMdCloudUpload } from "react-icons/io";
 import { FiAlertCircle } from "react-icons/fi";
 import { FaUserEdit } from "react-icons/fa";
 
+/**
+ * Profile page component.
+ *
+ * This component renders a user's profile page based on the profile data from the server.
+ * It displays the user's bio, preferred language, background, interests, learning goals, learning style, current knowledge level, preferred content types, and time commitment.
+ * It also allows the user to edit their profile information and update it on the server.
+ *
+ * @function Profile
+ * @returns {JSX.Element} The Profile page component.
+ */
 const Profile = () => {
   // State with additional fields for personalized learning
   const [formData, setFormData] = useState({

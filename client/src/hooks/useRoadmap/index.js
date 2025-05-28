@@ -220,6 +220,22 @@ const computeAncestors = (nodes, edges) => {
     return ancestorMap;
 };
 
+/**
+ * Hook: useRoadmap
+ * - mindmapId: string | null
+ * - openDrawer: function to call when user clicks "Resources"
+ * - returns an object with:
+ *   - nodes: array of nodes to render
+ *   - edges: array of edges to render
+ *   - onNodesChange: function to call when nodes change
+ *   - onEdgesChange: function to call when edges change
+ *   - onLayout: function to call when layout changes
+ *   - loading: boolean indicating if the mindmap is loading
+ *   - focusNode: function to call when user wants to focus on a node
+ *   - toggleCollapse: function to call when user wants to collapse/expand a node
+ *   - expandNodeHandler: function to call when user wants to expand a node
+ *   - updateNodeHandler: function to call when user wants to update a node
+ */
 export const useRoadmap = (mindmapId, openDrawer) => {
     const [nodes, setNodes] = useState([]);
     const [edges, setEdges] = useState([]);

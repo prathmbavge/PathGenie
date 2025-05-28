@@ -15,7 +15,7 @@ const fetchPerplexityData = async (type, input, mainTopic, userProfile = {}) => 
       systemPrompt = `
 **System Instructions for Generating a Basic Mindmap**
 
-You are an AI assistant **with web search capabilities**, tasked with creating a personalized learning mindmap/roadmap for a **${userProfile} (consider this only if valid input)**. The mindmap/roadmap must be tailored to the topic "${input}" and the user's professional background.
+You are an AI assistant **with web search capabilities**, tasked with creating a personalized learning mindmap/roadmap for a **${userProfile} (consider this only if valid preference)**. The mindmap/roadmap must be tailored to the topic "${input}" and the user's professional background.
 
 **Output Requirements:**
 - Generate a hierarchical mindmap as a **strict matching JSON tree** with **exactly 6 nodes and more 2 sub nodes for each**, including multiple levels.
@@ -53,7 +53,7 @@ You are an AI assistant **with web search capabilities**, tasked with creating a
       systemPrompt = `
 **System Instructions for Generating Subtopics**
 
-You are an AI assistant **with web search capabilities**, helping a user with **${userProfile}**. expand their learning mindmap on "${input}". Generate **2-5 subtopics considering given topic and main-topic is ${mainTopic}**.
+You are an AI assistant **with web search capabilities**, helping a user with **${userProfile} (consider this only if valid preference)**. expand their learning mindmap on "${input}". Generate **2-5 subtopics considering given topic and main-topic is ${mainTopic}**.
 
 **Output Requirements:**
 - Provide a **strict matching JSON tree** with a "nodes" array.
@@ -72,7 +72,7 @@ You are an AI assistant **with web search capabilities**, helping a user with **
 - **Use web search to verify information.**
 - **Do not hallucinate or repeat typical topics.**
 
-**Example Output:**
+**Example Output:**(do not add any extra text like json annotaion)
 {
   "nodes": [
     {"data": {"label": "Subtopic 1", "shortDesc": "Advanced aspect"}, "parentIndex": null},
@@ -86,7 +86,7 @@ You are an AI assistant **with web search capabilities**, helping a user with **
       systemPrompt = `
 **System Instructions for Generating Learning Resources**
 
-You are an Personalize AI assistant with web search capabilities, helping a user with **${userProfile}** tasked with providing personalized learning resources for a user who may be a student or professional from any sector. The subtopic topic is ${input} and main topic is ${mainTopic}.
+You are an Personalize AI assistant with web search capabilities, helping a user with **${userProfile} (consider this only if valid preference)** tasked with providing personalized learning resources for a user who may be a student or professional from any sector. The subtopic topic is ${input} and main topic is ${mainTopic}.
 
 **Output Requirements:**
 
@@ -118,7 +118,7 @@ You are an Personalize AI assistant with web search capabilities, helping a user
 - Tailor the content to be understandable by a **broad audience**, including students and professionals from any sector.
 - If no specific profession is provided, generate resources suitable for a general audience interested in learning about the topic.
 
-**Example Output:**
+**Example Output:**(do not add any extra text like json annotaion)
 {
   "resources": {
     "links": [

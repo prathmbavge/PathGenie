@@ -6,6 +6,15 @@ import SocialSignInButtons from "../components/AuthComponents/SocialSignInButton
 import AuthForm from "../components/AuthComponents/AuthForm";
 import SlideButton from "../components/Buttons/SlideButton";
 import { GrLogin } from "react-icons/gr";
+/**
+ * A page for registering a user.
+ *
+ * This page renders a {@link TrueFocus} heading, a {@link SocialSignInButtons} component for registering with
+ * Google or GitHub, an {@link AuthForm} component for registering with an email and password, and a link to the
+ * login page.
+ *
+ * @returns {JSX.Element} The Register page component.
+ */
 const Register = () => {
   const navigate = useNavigate();
   const [socialError, setSocialError] = useState("");

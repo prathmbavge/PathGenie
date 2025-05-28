@@ -1,9 +1,15 @@
-import { Spotlight } from "../ui/spotlight";
 import { cn } from "../lib/utils";
 import { TextGenerateEffect } from "../ui/text-generate-effect";
 import SlideButton from "../Buttons/SlideButton";
 import { GiMagicLamp } from "react-icons/gi";
 
+/**
+ * The Hero component is the first thing users see when they visit the homepage.
+ * It contains the logo, a tagline, and a button to start the magic.
+ *
+ * @returns {JSX.Element} The Hero component.
+ * @constructor
+ */
 const Hero = () => {
   return (
     <div className="pb-20 pt-[75px]">
@@ -26,7 +32,7 @@ const Hero = () => {
           />
           <TextGenerateEffect
             className="text-center md:text-5xl lg:text-6xl"
-            words="Start Your Journey With Pathgenie"
+            words="Start Your Journey With PathGenie"
           />
 
           <p className="relative z-20 bg-gradient-to-b from-neutral-200 to-neutral-500 bg-clip-text pb-8 text-[20px] font-bold text-transparent text-center">

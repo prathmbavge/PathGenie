@@ -62,6 +62,15 @@ const AnimatedPlaceholder = styled.span`
   width: 100%;
 `;
 
+/**
+ * GradientInput
+ *
+ * A gradient input field component that displays a gradient under the input,
+ * and a placeholder that changes every 3 seconds.
+ *
+ * @param {{ id: string, name: string, type: string, value: string, onChange: Function, placeholders: string[], required: boolean, style: Object, className: string, duration: number }} props
+ * @returns {JSX.Element} The GradientInput component.
+ */
 const GradientInput = ({
   id,
   name,

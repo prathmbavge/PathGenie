@@ -1,115 +1,3 @@
-// // src/hooks/useRoadmap/useFetchMindmap.js
-// import { useEffect, useRef, useCallback } from "react";
-// import { requestHandler } from "../../../utils/index";
-// import { showErrorToast } from "../../../utils/toastUtils";
-// import { getMindmap, getNodeResources } from "../../api/mindmapApi";
-// import { getLayoutedElements } from "../../../utils/layout";
-
-// /**
-//  * Hook: useFetchMindmap
-//  * - mindmapId: string | null
-//  * - setNodes, setEdges, setLoading: state setters from the parent hook.
-//  * - openDrawer: function to call when user clicks "Resources".
-//  * - expandNodeHandler, updateNodeHandler, toggleCollapse: node callbacks
-//  */
-// export const useFetchMindmap = (
-//   mindmapId,
-//   setNodes,
-//   setEdges,
-//   setLoading,
-//   openDrawer,
-//   expandNodeHandler,
-//   updateNodeHandler,
-//   toggleCollapse
-// ) => {
-//   const abortControllerRef = useRef(null);
-
-//   const fetchMindmap = useCallback(
-//     async () => {
-//       if (!mindmapId) {
-//         showErrorToast("No mindmap ID provided.");
-//         return;
-//       }
-
-//       // Abort any previous fetch
-//       if (abortControllerRef.current) {
-//         abortControllerRef.current.abort();
-//       }
-//       abortControllerRef.current = new AbortController();
-
-//       await requestHandler(
-//         () => getMindmap(mindmapId, abortControllerRef.current.signal),
-//         setLoading,
-//         async (res) => {
-//           // Transform server nodes into React Flow format
-//           const reactNodes = res.data.nodes.map((node) => ({
-//             id: node._id.toString(),
-//             type: "custom",
-//             data: {
-//               id: node._id.toString(),
-//               status: node.status,
-//               shortDesc: node.data.shortDesc,
-//               label: node.data.label,
-//               onExpand: node.isLeafNode ? expandNodeHandler : undefined,
-//               onUpdate: updateNodeHandler,
-//               onCollapse: node.isLeafNode ? undefined : toggleCollapse,
-//               onDelete: async () => {
-//                 // Placeholder for node deletion if needed
-//               },
-//               openDrawer: async () => {
-//                 const { data } = await getNodeResources(
-//                   mindmapId,
-//                   node._id,
-//                   abortControllerRef.current.signal
-//                 );
-//                 console.log("Fetched node resources:", data.resources);
-//                 openDrawer(data.resources || {});
-//               },
-//             },
-//             parent: node.parent ? node.parent.toString() : null,
-//             position: { x: 0, y: 0 },
-//             ancestors: node.ancestors || [],
-//           }));
-
-//           // Generate edges from server
-//           const initialEdges = res.data.edges;
-
-//           // Initial layout (horizontal)
-//           const { nodes: layoutedNodes, edges: layoutedEdges } =
-//             getLayoutedElements(reactNodes, initialEdges, { direction: "LR" });
-
-//           setNodes(layoutedNodes);
-//           setEdges(layoutedEdges);
-//         },
-//         (error) => {
-//           if (error.name !== "AbortError") {
-//             console.error("Error fetching mindmap:", error);
-//             showErrorToast("Failed to fetch mindmap data.");
-//           }
-//         }
-//       );
-//     },
-//     [
-//       mindmapId,
-//       setLoading,
-//       setNodes,
-//       setEdges,
-//       openDrawer,
-//       expandNodeHandler,
-//       updateNodeHandler,
-//       toggleCollapse, // ADDED so React re-creates this callback if toggleCollapse ever changes
-//     ]
-//   );
-
-//   useEffect(() => {
-//     fetchMindmap();
-//     return () => {
-//       if (abortControllerRef.current) {
-//         abortControllerRef.current.abort();
-//       }
-//     };
-//   }, [fetchMindmap]);
-// };
 
 import { useEffect, useRef, useCallback } from "react";
 import { requestHandler } from "../../../utils/index";
@@ -118,13 +6,26 @@ import { getMindmap, getNodeResources } from "../../api/mindmapApi";
 import { getLayoutedElements } from "../../../utils/layout";
 import { useSession } from "../../lib/auth-client";
 
+
 /**
  * Hook: useFetchMindmap
- * - mindmapId: string | null
- * - setNodes, setEdges, setLoading: state setters from the parent hook.
- * - openDrawer: function to call when user clicks "Resources".
- * - expandNodeHandler, updateNodeHandler, toggleCollapse: node callbacks
+ * 
+ * Fetches and processes a mindmap based on the given mindmapId. The hook manages the state
+ * of the nodes and edges to be displayed using React Flow. It also handles various callbacks 
+ * for node interaction such as expanding, updating, collapsing, and downloading resources.
+ * 
+ * @param {string|null} mindmapId - The ID of the mindmap to fetch.
+ * @param {Function} setNodes - State setter function to update the nodes.
+ * @param {Function} setEdges - State setter function to update the edges.
+ * @param {Function} setLoading - State setter to manage the loading state.
+ * @param {Function} openDrawer - Function to open a drawer with node resources.
+ * @param {Function} expandNodeHandler - Callback to handle node expansion.
+ * @param {Function} updateNodeHandler - Callback to handle node updates.
+ * @param {Function} toggleCollapse - Callback to toggle node collapse state.
+ * @param {Function} downloadResourcesHandler - Callback to handle downloading node resources.
  */
+
+
 export const useFetchMindmap = (
   mindmapId,
   setNodes,

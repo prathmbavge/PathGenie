@@ -170,7 +170,7 @@ export default {
         const ownerId = mindmap.owner;
         // Fetch nodes using lean query (much faster for read-only ops)
         const nodes = await Node.find({ mindmapId }).sort({ path: 1 }).lean();
- 
+
         const { nodes: updatedNodes, edges } = generateEdges(nodes);
         // console.log("Updated nodes:", updatedNodes);
         res.status(200).json(new ApiResponse(200, { nodes: updatedNodes, edges, ownerId }, "Mindmap fetched"));
@@ -294,7 +294,16 @@ export default {
         }
 
         try {
-            const userProfile = { profession: user.profession || 'unknown', experienceYears: user.experienceYears || 0 };
+            const userProfile = await Profile.findOne({ userId: user.id }).select('-_id -userId -createdAt -updatedAt');
+            //convert whole object to string represenation to give to ai
+            userProfile.bio = userProfile.bio.toString();
+            userProfile.contentTypes = userProfile.contentTypes.toString();
+            userProfile.language = userProfile.language.toString();
+            userProfile.background = userProfile.background.toString();
+            userProfile.interests = userProfile.interests.toString();
+            userProfile.learningGoals = userProfile.learningGoals.toString();
+            userProfile.learningStyle = userProfile.learningStyle.toString();
+            userProfile.knowledgeLevel = userProfile.knowledgeLevel.toString();
 
             const { resources } = await gatherResources(node.data.label + '-' + node.data.shortDesc, mindmap.title, userProfile);
             node.resources = resources;
